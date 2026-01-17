@@ -18,7 +18,6 @@ public record DimensionRenderer(
         int sunriseColor,
         int sunriseAngle,
         boolean renderInRain,
-        boolean renderVoidFog,
         double horizonHeight,
         float clearColorScale
 ) {
@@ -32,7 +31,6 @@ public record DimensionRenderer(
         Codec.INT.fieldOf("sunrise_color").forGetter(DimensionRenderer::sunriseColor),
         Codec.INT.fieldOf("sunrise_angle").forGetter(DimensionRenderer::sunriseAngle),
         Codec.BOOL.fieldOf("render_in_rain").forGetter(DimensionRenderer::renderInRain),
-        Codec.BOOL.fieldOf("render_void_fog").forGetter(DimensionRenderer::renderVoidFog),
         Codec.DOUBLE.fieldOf("horizon_height").forGetter(DimensionRenderer::horizonHeight),
         Codec.FLOAT.fieldOf("clear_color_scale").forGetter(DimensionRenderer::clearColorScale)
     ).apply(inst, DimensionRenderer::new));

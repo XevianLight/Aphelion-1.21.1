@@ -1,11 +1,17 @@
 package net.xevianlight.aphelion.client.dimension;
 
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 import net.xevianlight.aphelion.Aphelion;
+import net.xevianlight.aphelion.client.PartitionClientState;
+import net.xevianlight.aphelion.core.space.SpacePartitionSavedData;
+import net.xevianlight.aphelion.util.SpacePartitionHelper;
 import org.joml.Matrix4f;
 
 public class SpaceSkyEffects extends DimensionSpecialEffects {
@@ -42,6 +48,7 @@ public class SpaceSkyEffects extends DimensionSpecialEffects {
 
     @Override
     public boolean isFoggyAt(int i, int i1) {
+
         ResourceLocation id = orbitForPos(net.minecraft.client.Minecraft.getInstance()
                 .gameRenderer.getMainCamera().getPosition());
 
@@ -49,11 +56,19 @@ public class SpaceSkyEffects extends DimensionSpecialEffects {
     }
 
     public static ResourceLocation orbitForPos(Vec3 pos) {
-        double r = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
 
-        if (r < 100) return ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "orbit/earth");
-        if (r < 200) return ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "orbit/mars");
-        if (r < 300) return ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "orbit/venus");
+        int x = SpacePartitionHelper.get(pos.x);
+        int z = SpacePartitionHelper.get(pos.z);
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "orbit/default");
+
+//        int px = PartitionClientState.pxOr(0);
+//        int py = PartitionClientState.pyOr(0);
+        var data = ResourceLocation.parse(PartitionClientState.idOrUnknown());
+
+//        var data = SpacePartitionSavedData.get(serverLevel).getOrbitForPartition((int)   x, (int) z);
+        if (data != null) return data;
 
         return ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "orbit/default");
     }

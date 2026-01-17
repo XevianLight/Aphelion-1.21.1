@@ -62,7 +62,9 @@ public class Aphelion {
         NeoForge.EVENT_BUS.register(this);
 
         // Register the item to a creative tab
-        modEventBus.addListener(this::addCreative);
+        MOD_BUS.addListener(this::addCreative);
+
+//        MOD_BUS.addListener(this::registerCommands);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, AphelionConfig.SPEC);

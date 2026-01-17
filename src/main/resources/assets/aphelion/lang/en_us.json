@@ -24,5 +24,18 @@
   "creativetab.aphelion.aphelion_blocks": "Aphelion Blocks",
 
   "tag.item.c.ingots.steel": "Steel Ingots",
-  "tag.item.c.ingots.aluminum": "Aluminum Ingots"
+  "tag.item.c.ingots.aluminum": "Aluminum Ingots",
+
+
+  "aphelion.command.station.orbit.set": "Set station (%s, %s)'s orbit to %s",
+  "aphelion.command.station.orbit.get": "Station (%s, %s)'s orbit is assigned to %s",
+  "aphelion.command.station.orbit.get.unassigned": "Station (%s, %s)'s orbit is not assigned",
+  "aphelion.command.station.orbit.cleared": "Cleared station (%s, %s)'s orbit",
+  "aphelion.command.station.orbit.clearall": "Cleared all station orbits",
+  "aphelion.command.station.orbit.overwriteall": "Set all existing station orbits with %s (unassigned stations were not affected)",
+  "aphelion.command.station.orbit.debug.posToKey": "Key of station (%s, %s) is %s",
+  "aphelion.command.station.orbit.debug.keyToPos": "Key %s belongs to station %s",
+  "aphelion.command.station.teleport.success": "Teleported %s to station %s, id: %s",
+  "aphelion.command.station.teleport.failure": "Failed to teleport, entity is null",
+  "aphelion.command.station.orbit.debug.getPartition": "Partition of %s, %s is %s"
 }

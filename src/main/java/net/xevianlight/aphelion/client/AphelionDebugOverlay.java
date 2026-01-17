@@ -10,6 +10,8 @@ import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.client.dimension.DimensionRenderer;
 import net.xevianlight.aphelion.client.dimension.DimensionRendererCache;
 import net.xevianlight.aphelion.client.dimension.SpaceSkyEffects;
+import net.xevianlight.aphelion.core.space.SpacePartitionSavedData;
+import net.xevianlight.aphelion.util.SpacePartitionHelper;
 
 @EventBusSubscriber(modid = Aphelion.MOD_ID, value = Dist.CLIENT)
 public class AphelionDebugOverlay {
@@ -35,10 +37,14 @@ public class AphelionDebugOverlay {
                 + ", thickFog=" + r.hasThickFog()
                 + ", fog=" + r.hasFog());
 
+        int x = SpacePartitionHelper.get(Math.floor(mc.player.position().x));
+        int z = SpacePartitionHelper.get(Math.floor(mc.player.position().z));
+
         // Left side of F3
         event.getLeft().add("");
         event.getLeft().add("Aphelion:");
         event.getLeft().add(" Orbit: " + orbitId);
-        event.getLeft().add(" Sky: " + rendererSummary);
+//        event.getLeft().add(" Sky: " + rendererSummary);
+        event.getLeft().add(" Station: " +  x + " " + z + "   ID: " + SpacePartitionSavedData.pack(x,z));
     }
 }

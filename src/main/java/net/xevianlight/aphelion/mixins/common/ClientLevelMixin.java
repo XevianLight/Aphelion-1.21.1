@@ -3,18 +3,41 @@ package net.xevianlight.aphelion.mixins.common;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.LevelHeightAccessor;
+import net.xevianlight.aphelion.Aphelion;
+import net.xevianlight.aphelion.client.PartitionClientState;
 import net.xevianlight.aphelion.client.dimension.DimensionRendererCache;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientLevel.ClientLevelData.class)
 public abstract class ClientLevelMixin {
+
+
+    private ClientLevel this$0;
+
+    @Unique
+    private ResourceLocation aphelion$getRenderKey() {
+        var mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        ResourceLocation key;
+
+        if (level.dimension() == ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "space"))) {
+            key = ResourceLocation.parse(PartitionClientState.idOrUnknown());
+        } else {
+            key = level.dimensionType().effectsLocation();
+        }
+
+        return key;
+    }
 
     @Inject(method = "getHorizonHeight", at = @At("HEAD"), cancellable = true)
     private void aphelion$horizonHeight(LevelHeightAccessor level, CallbackInfoReturnable<Double> cir) {
@@ -23,7 +46,7 @@ public abstract class ClientLevelMixin {
         if (clientLevel == null) return;
 
         // effectsLocation is what your dimension JSON sets in "effects"
-        ResourceLocation effectsId = clientLevel.dimensionType().effectsLocation();
+        ResourceLocation effectsId = aphelion$getRenderKey();
 
         var i = DimensionRendererCache.getOrDefault(effectsId);
 
