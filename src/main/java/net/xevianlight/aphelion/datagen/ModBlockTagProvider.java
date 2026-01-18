@@ -22,11 +22,14 @@ public class ModBlockTagProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(ModBlocks.TEST_BLOCK.get())
                 .add(ModBlocks.ELECTRIC_ARC_FURNACE.get())
-                .add(ModBlocks.BLOCK_STEEL.get());
+                .add(ModBlocks.BLOCK_STEEL.get())
+                .add(ModBlocks.ARC_FURNACE_CASING_BLOCK.get());
+
         tag(BlockTags.NEEDS_STONE_TOOL)
                 .add(ModBlocks.TEST_BLOCK.get())
                 .add(ModBlocks.ELECTRIC_ARC_FURNACE.get())
-                .add(ModBlocks.BLOCK_STEEL.get());
+                .add(ModBlocks.BLOCK_STEEL.get())
+                .add(ModBlocks.ARC_FURNACE_CASING_BLOCK.get());
 
         tag(ModTags.Blocks.STORAGE_BLOCKS_STEEL)
                 .add(ModBlocks.BLOCK_STEEL.get());

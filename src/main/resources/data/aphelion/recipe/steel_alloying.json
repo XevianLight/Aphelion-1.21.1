@@ -1,0 +1,15 @@
+{
+  "type": "aphelion:alloying",
+  "base": {
+    "tag": "c:ingots/iron"
+  },
+  "base_count": 1,
+  "alloy": {
+    "tag": "minecraft:coals"
+  },
+  "alloy_count": 1,
+  "result": {
+    "id": "aphelion:ingot_steel",
+    "count": 1
+  }
+}

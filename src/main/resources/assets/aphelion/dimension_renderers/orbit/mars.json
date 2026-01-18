@@ -8,7 +8,6 @@
   "render_in_rain": true,
   "sunrise_angle": 0,
   "sunrise_color": 14180147,
-  "render_void_fog": false,
   "horizon_height": -128,
   "clear_color_scale": 1.0
 }

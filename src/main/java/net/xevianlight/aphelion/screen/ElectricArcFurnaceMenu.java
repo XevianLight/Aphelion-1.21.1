@@ -39,10 +39,10 @@ public class ElectricArcFurnaceMenu extends AbstractContainerMenu {
         addPlayerInventory(inventory);
         addPlayerHotbar(inventory);
 
-        this.addSlot(new EnergyItemSlot(this.blockEntity.inventory, 3, 8, 54));
-        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 0, 63, 35));
-        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 1, 40, 35));
-        this.addSlot(new ExtractOnlySlot(this.blockEntity.inventory, 2, 125, 35));
+        this.addSlot(new EnergyItemSlot(this.blockEntity.inventory, ElectricArcFurnaceEntity.ENERGY_SLOT, 8, 54));
+        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, ElectricArcFurnaceEntity.INPUT_SLOT, 63, 35));
+        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, ElectricArcFurnaceEntity.SECONDARY_INPUT_SLOT, 40, 35));
+        this.addSlot(new ExtractOnlySlot(this.blockEntity.inventory, ElectricArcFurnaceEntity.OUTPUT_SLOT, 125, 35));
 
         addDataSlots(data);
     }

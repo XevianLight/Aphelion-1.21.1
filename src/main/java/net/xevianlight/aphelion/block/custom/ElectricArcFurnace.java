@@ -36,12 +36,20 @@ public class ElectricArcFurnace extends BaseEntityBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
+    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
 
     public ElectricArcFurnace(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.getStateDefinition().any()
+                .setValue(FORMED, false));
     }
 
     public static final MapCodec<ElectricArcFurnace> CODEC = simpleCodec(ElectricArcFurnace::new);
+
+    private final int INPUT_SLOT = 0;
+    private final int SECONDARY_INPUT_SLOT = 1;
+    private final int OUTPUT_SLOT = 2;
+    private final int ENERGY_SLOT = 3;
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
@@ -64,7 +72,7 @@ public class ElectricArcFurnace extends BaseEntityBlock {
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult result) {
 
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof ElectricArcFurnaceEntity electricArcFurnaceEntity) {
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof ElectricArcFurnaceEntity electricArcFurnaceEntity && state.getValue(FORMED)) {
             serverPlayer.openMenu(new SimpleMenuProvider(electricArcFurnaceEntity, Component.literal("Electric Arc Furnace")), pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
@@ -84,13 +92,25 @@ public class ElectricArcFurnace extends BaseEntityBlock {
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (state.getBlock() != newState.getBlock()) {
+        if (!level.isClientSide && state.getBlock() != newState.getBlock()) {
             BlockEntity blockEntity= level.getBlockEntity(pos);
             if (blockEntity instanceof ElectricArcFurnaceEntity electricArcFurnaceEntity) {
+                if(state.getValue(FORMED)) electricArcFurnaceEntity.unformForRemoval();
                 electricArcFurnaceEntity.drops();
             }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!level.isClientSide() && oldState.getBlock() != state.getBlock()) {
+            BlockEntity blockEntity= level.getBlockEntity(pos);
+            if (blockEntity instanceof ElectricArcFurnaceEntity electricArcFurnaceEntity) {
+                electricArcFurnaceEntity.tryForm();
+            }
+        }
     }
 
     public static int getRedstoneSignalFromItemHandler(@javax.annotation.Nullable ItemStackHandler itemStackHandler, List<Integer> slots) {
@@ -131,12 +151,15 @@ public class ElectricArcFurnace extends BaseEntityBlock {
     @Override
     protected int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
         List<Integer> slots = new ArrayList<>();
-        slots.add(0);
-        slots.add(1);
-        slots.add(2);
-        slots.add(3);
+        slots.add(ElectricArcFurnaceEntity.INPUT_SLOT);
+        slots.add(ElectricArcFurnaceEntity.SECONDARY_INPUT_SLOT);
+        slots.add(ElectricArcFurnaceEntity.OUTPUT_SLOT);
         ElectricArcFurnaceEntity electricArcFurnaceEntity = ((ElectricArcFurnaceEntity) level.getBlockEntity(pos));
-        return getRedstoneSignalFromItemHandler(electricArcFurnaceEntity.inventory, slots);
+
+        if (electricArcFurnaceEntity != null)
+            return getRedstoneSignalFromItemHandler(electricArcFurnaceEntity.inventory, slots);
+
+        return 0;
     }
 
     @Override
@@ -160,11 +183,11 @@ public class ElectricArcFurnace extends BaseEntityBlock {
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()).setValue(LIT, false);
+        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()).setValue(LIT, false).setValue(FORMED, false);
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, LIT);
+        builder.add(FACING, LIT, FORMED);
     }
 }

@@ -6,10 +6,7 @@ import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.xevianlight.aphelion.Aphelion;
-import net.xevianlight.aphelion.block.custom.BlockSteel;
-import net.xevianlight.aphelion.block.custom.DimensionChangerBlock;
-import net.xevianlight.aphelion.block.custom.ElectricArcFurnace;
-import net.xevianlight.aphelion.block.custom.TestBlock;
+import net.xevianlight.aphelion.block.custom.*;
 import net.xevianlight.aphelion.item.*;
 
 public class ModItems {
@@ -35,4 +32,5 @@ public static final DeferredItem<Item> MUSIC_DISC_BIT_SHIFT = ITEMS.register("mu
     public static final DeferredItem<BlockItem> DIMENSION_CHANGER = ITEMS.register("dimension_changer", () -> new BlockItem(ModBlocks.DIMENSION_CHANGER.get(), DimensionChangerBlock.getItemProperties()));
     public static final DeferredItem<BlockItem> ELECTRIC_ARC_FURNACE = ITEMS.register("electric_arc_furnace", () -> new BlockItem(ModBlocks.ELECTRIC_ARC_FURNACE.get(), ElectricArcFurnace.getItemProperties()));
     public static final DeferredItem<BlockItem> BLOCK_STEEL = ITEMS.register("block_steel", () -> new BlockItem(ModBlocks.BLOCK_STEEL.get(), BlockSteel.getItemProperties()));
+    public static final DeferredItem<BlockItem> ARC_FURNACE_CASING_BLOCK = ITEMS.register("arc_furnace_casing", () -> new BlockItem(ModBlocks.ARC_FURNACE_CASING_BLOCK.get(), ArcFurnaceCasingBlock.getItemProperties()));
 }

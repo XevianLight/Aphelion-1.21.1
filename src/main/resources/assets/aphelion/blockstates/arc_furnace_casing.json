@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "aphelion:block/arc_furnace_casing"
+    },
+    "formed=true": {
+      "model": "aphelion:block/arc_furnace_casing_formed"
+    }
+  }
+}

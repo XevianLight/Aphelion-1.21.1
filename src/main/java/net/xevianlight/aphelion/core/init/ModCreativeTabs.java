@@ -39,5 +39,6 @@ public class ModCreativeTabs {
                         output.accept(ModItems.TEST_BLOCK);
                         output.accept(ModItems.ELECTRIC_ARC_FURNACE);
                         output.accept(ModItems.BLOCK_STEEL);
+                        output.accept(ModItems.ARC_FURNACE_CASING_BLOCK);
                     }).build());
 }

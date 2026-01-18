@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "aphelion:block/arc_furnace_casing_formed"
+  }
+}

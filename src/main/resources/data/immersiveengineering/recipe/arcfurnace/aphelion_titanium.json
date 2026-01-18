@@ -1,0 +1,21 @@
+{
+  "type": "immersiveengineering:arc_furnace",
+  "additives": [
+    {
+      "tag": "minecraft:coals"
+    }
+  ],
+  "energy": 204800,
+  "input": {
+    "tag": "c:ingots/iron"
+  },
+  "results": [
+    {
+      "tag": "c:ingots/titanium"
+    }
+  ],
+  "slag": {
+    "tag": "c:slag"
+  },
+  "time": 400
+}

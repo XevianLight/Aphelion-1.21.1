@@ -5,6 +5,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.block.entity.custom.DimensionChangerBlockEntity;
+import net.xevianlight.aphelion.block.entity.custom.EAFPartEntity;
 import net.xevianlight.aphelion.block.entity.custom.ElectricArcFurnaceEntity;
 import net.xevianlight.aphelion.block.entity.custom.TestBlockEntity;
 
@@ -26,5 +27,10 @@ public class ModBlockEntities {
     public static final Supplier<BlockEntityType<ElectricArcFurnaceEntity>> ELECTRIC_ARC_FURNACE_ENTITY =
             BLOCK_ENTITIES.register("electric_arc_furnace_block_entity", () -> BlockEntityType.Builder.of(
                     ElectricArcFurnaceEntity::new, ModBlocks.ELECTRIC_ARC_FURNACE.get()).build(null)
+            );
+
+    public static final Supplier<BlockEntityType<EAFPartEntity>> EAF_PART_ENTITY =
+            BLOCK_ENTITIES.register("eaf_part_entity", () -> BlockEntityType.Builder.of(
+                    EAFPartEntity::new, ModBlocks.ARC_FURNACE_CASING_BLOCK.get()).build(null)
             );
 }

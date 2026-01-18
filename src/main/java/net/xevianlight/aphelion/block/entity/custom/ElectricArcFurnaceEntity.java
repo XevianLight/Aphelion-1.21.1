@@ -3,41 +3,45 @@ package net.xevianlight.aphelion.block.entity.custom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.xevianlight.aphelion.Aphelion;
+import net.xevianlight.aphelion.block.custom.ArcFurnaceCasingBlock;
 import net.xevianlight.aphelion.block.custom.ElectricArcFurnace;
 import net.xevianlight.aphelion.block.entity.energy.ModEnergyStorage;
-import net.xevianlight.aphelion.block.entity.energy.ModEnergyUtil;
-import net.xevianlight.aphelion.client.dimension.DimensionRendererCache;
 import net.xevianlight.aphelion.core.init.ModBlockEntities;
+import net.xevianlight.aphelion.recipe.ElectricArcFurnaceRecipe;
+import net.xevianlight.aphelion.recipe.ElectricArcFurnaceRecipeInput;
+import net.xevianlight.aphelion.recipe.ModRecipes;
 import net.xevianlight.aphelion.screen.ElectricArcFurnaceMenu;
 import net.xevianlight.aphelion.util.SidedSlotHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvider {
@@ -49,12 +53,12 @@ public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvide
     private int maxProgress = 100;
     private final int DEFAULT_MAX_PROGRESS = 100;
     private final ContainerData data;
-    private int Blasting_ENERGY_COST = 20;
+    private int MACHINE_ENERGY_COST = 20;
 
-    private final int INPUT_SLOT = 0;
-    private final int SECONDARY_INPUT_SLOT = 1;
-    private final int OUTPUT_SLOT = 2;
-    private final int ENERGY_SLOT = 3;
+    public static final int INPUT_SLOT = 0;
+    public static final int SECONDARY_INPUT_SLOT = 1;
+    public static final int OUTPUT_SLOT = 2;
+    public static final int ENERGY_SLOT = 3;
 
     public ElectricArcFurnaceEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.ELECTRIC_ARC_FURNACE_ENTITY.get(), pos, blockState);
@@ -104,10 +108,17 @@ public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvide
 
     public void tick(Level level, BlockPos pos, BlockState blockState) {
 
+        if (!blockState.getValue(ElectricArcFurnace.FORMED))
+            return;
+
+        chargeFromItem();
+
         if (inventory.getStackInSlot(SECONDARY_INPUT_SLOT).isEmpty()) {
-            if (hasFurnaceRecipe(INPUT_SLOT) && hasEnoughEnergyToCraft(Blasting_ENERGY_COST)) {
+            // Secondary slot is empty, try furnace recipes
+            if (hasFurnaceRecipe(INPUT_SLOT) && hasEnoughEnergyToCraft(MACHINE_ENERGY_COST)) {
+                // Recipe detected! We have enough energy to process
                 progress++;
-                useEnergyForBlasting();
+                useEnergy();
                 level.setBlockAndUpdate(pos, blockState.setValue(ElectricArcFurnace.LIT, true));
                 setChanged(level, pos, blockState);
 
@@ -115,22 +126,46 @@ public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvide
                     outputBlastingResult(INPUT_SLOT, OUTPUT_SLOT);
                     resetProgress();
                 }
-            } else if (hasFurnaceRecipe(INPUT_SLOT) && !hasEnoughEnergyToCraft(Blasting_ENERGY_COST)) {
+            } else if (hasFurnaceRecipe(INPUT_SLOT) && !hasEnoughEnergyToCraft(MACHINE_ENERGY_COST)) {
+                // Recipe detected but we ran out of power
                 level.setBlockAndUpdate(pos, blockState.setValue(ElectricArcFurnace.LIT, false));
                 setChanged(level, pos, blockState);
                 progress = progress > 0 ? progress - 1 : 0;
             } else {
+                // Invalid recipe
                 resetProgress();
                 level.setBlockAndUpdate(pos, blockState.setValue(ElectricArcFurnace.LIT, false));
                 setChanged(level, pos, blockState);
             }
         } else {
-            resetProgress();
-            level.setBlockAndUpdate(pos, blockState.setValue(ElectricArcFurnace.LIT, false));
-            setChanged(level, pos, blockState);
+            // Secondary slot is NOT empty, try alloying recipes
+            if (hasAlloyingRecipe(INPUT_SLOT, SECONDARY_INPUT_SLOT)) {
+                if (hasEnoughEnergyToCraft(MACHINE_ENERGY_COST)) {
+                    // Alloy recipe detected! We have enough energy to process
+                    progress++;
+                    useEnergy();
+                    level.setBlockAndUpdate(pos, blockState.setValue(ElectricArcFurnace.LIT, true));
+                    setChanged(level, pos, blockState);
+
+                    if (hasCraftingFinished()) {
+                        outputAlloyingResult(INPUT_SLOT, SECONDARY_INPUT_SLOT, OUTPUT_SLOT);
+                        resetProgress();
+                    }
+                } else {
+                    // Recipe detected but we ran out of power
+                    level.setBlockAndUpdate(pos, blockState.setValue(ElectricArcFurnace.LIT, false));
+                    setChanged(level, pos, blockState);
+                    progress = progress > 0 ? progress - 1 : 0;
+                }
+            } else {
+                // Invalid recipe
+                resetProgress();
+                level.setBlockAndUpdate(pos, blockState.setValue(ElectricArcFurnace.LIT, false));
+                setChanged(level, pos, blockState);
+            }
         }
 
-        chargeFromItem();
+
     }
 
     private void chargeFromItem() {
@@ -177,13 +212,22 @@ public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvide
                 inventory.getStackInSlot(resultSlot).getCount() + (output.getCount() * 2)));
     }
 
+    private void outputAlloyingResult(int inputSlot, int secondaryInputSlot, int outputSlot) {
+        Optional<RecipeHolder<ElectricArcFurnaceRecipe>> recipe = getAlloyingRecipe(inventory.getStackInSlot(inputSlot), inventory.getStackInSlot(secondaryInputSlot));
+        ItemStack output = recipe.get().value().getResultItem(null);
+
+        inventory.extractItem(inputSlot, recipe.get().value().baseCount(), false);
+        inventory.extractItem(secondaryInputSlot, recipe.get().value().alloyCount(), false);
+        inventory.setStackInSlot(outputSlot, new ItemStack(output.getItem(), inventory.getStackInSlot(outputSlot).getCount() + (output.getCount())));
+    }
+
     private void resetProgress() {
         this.progress = 0;
         this.maxProgress = DEFAULT_MAX_PROGRESS;
     }
 
-    private void useEnergyForBlasting() {
-        this.ENERGY_STORAGE.extractEnergy(Blasting_ENERGY_COST, false);
+    private void useEnergy() {
+        this.ENERGY_STORAGE.extractEnergy(MACHINE_ENERGY_COST, false);
     }
 
     private boolean hasEnoughEnergyToCraft(int energyCost) {
@@ -208,7 +252,45 @@ public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvide
     }
 
     private boolean hasCraftingFinished() {
+        maxProgress = DEFAULT_MAX_PROGRESS;
         return this.progress >= this.maxProgress;
+    }
+
+
+    private boolean hasAlloyingRecipe(int slotBase, int slotAlloy) {
+        ItemStack baseStack = inventory.getStackInSlot(slotBase);
+        ItemStack alloyStack = inventory.getStackInSlot(slotAlloy);
+
+        Optional<RecipeHolder<ElectricArcFurnaceRecipe>> opt =
+                getAlloyingRecipe(baseStack, alloyStack);
+
+        if (opt.isEmpty()) return false;
+
+        ElectricArcFurnaceRecipe recipe = opt.get().value();
+
+        // 1) Check required input counts
+        if (baseStack.getCount() < recipe.baseCount()) return false;
+        if (alloyStack.getCount() < recipe.alloyCount()) return false;
+
+        // 2) Check output slot compatibility + space
+        ItemStack output = recipe.getResultItem(null);
+
+        maxProgress = recipe.cookTime();
+
+        return canInsertItemIntoOutputSlot(output, OUTPUT_SLOT)
+                && canInsertAmountIntoOutputSlot(output.getCount(), OUTPUT_SLOT);
+    }
+
+    private Optional<RecipeHolder<ElectricArcFurnaceRecipe>> getAlloyingRecipe(ItemStack base, ItemStack alloy) {
+        if (base.isEmpty()) return Optional.empty();
+        if (alloy.isEmpty()) return Optional.empty();
+
+        return this.level.getRecipeManager()
+                .getRecipeFor(
+                        ModRecipes.ELECTRIC_ARC_FURNACE_RECIPE_TYPE.get(),
+                        new ElectricArcFurnaceRecipeInput(base, alloy),
+                        level
+                );
     }
 
     private boolean hasFurnaceRecipe(int slot) {
@@ -233,7 +315,7 @@ public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvide
         level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
     }
 
-    private final IItemHandler fullHandler = new SidedSlotHandler(inventory, new int[]{0,1}, true, true);
+    private final IItemHandler fullHandler = new SidedSlotHandler(inventory, new int[]{INPUT_SLOT, SECONDARY_INPUT_SLOT, OUTPUT_SLOT, ENERGY_SLOT}, true, true);
     private final IItemHandler inputHandler = new SidedSlotHandler(inventory, new int[]{0,1}, true, true);
     private final IItemHandler outputHandler = new SidedSlotHandler(inventory, new int[]{2,3}, false, true);
     private final IItemHandler jadeHandler = new SidedSlotHandler(inventory, new int[]{0}, false, false);
@@ -247,6 +329,7 @@ public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvide
     }
 
     private final ModEnergyStorage ENERGY_STORAGE = createEnergyStorage();
+
     private ModEnergyStorage createEnergyStorage() {
         return new ModEnergyStorage(ENERGY_CAPACITY, MAX_TRANSFER) {
             @Override
@@ -308,4 +391,144 @@ public class ElectricArcFurnaceEntity extends BlockEntity implements MenuProvide
     public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
         return saveWithoutMetadata(pRegistries);
     }
+
+    private static BlockPos rotateY(BlockPos off, Direction facing) {
+        // Assumes "default" shape faces NORTH.
+        return switch (facing) {
+            case NORTH -> off;
+            case EAST  -> new BlockPos(-off.getZ(), off.getY(), off.getX());
+            case SOUTH -> new BlockPos(-off.getX(), off.getY(), -off.getZ());
+            case WEST  -> new BlockPos(off.getZ(), off.getY(), -off.getX());
+            default    -> off;
+        };
+    }
+
+
+
+    /// MULTIBLOCK
+    /// LOGIC
+    /// BELOW
+
+
+
+    private boolean formed = false; // cached runtime state
+
+    private static final BlockPos[] SHAPE = new BlockPos[] {
+            new BlockPos(1, 0, 0),
+            new BlockPos(0, 0, 1),
+            new BlockPos(1, 0, 1),
+
+            new BlockPos(0, 1, 0),
+            new BlockPos(1, 1, 0),
+            new BlockPos(0, 1, 1),
+            new BlockPos(1, 1, 1),
+    };
+
+    private List<BlockPos> getPartPositions() {
+        Direction facing = getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
+        BlockPos origin = getBlockPos();
+
+        List<BlockPos> out = new ArrayList<>(SHAPE.length);
+        for (BlockPos off : SHAPE) {
+            BlockPos ro = rotateY(off, facing);
+            out.add(origin.offset(ro));
+        }
+        return out;
+    }
+
+    private boolean structureMatches() {
+        if (level == null) return false;
+
+        for (BlockPos p : getPartPositions()) {
+            BlockState st = level.getBlockState(p);
+
+            // Accept only your casing/part blocks
+            if (!(st.getBlock() instanceof ArcFurnaceCasingBlock)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isFormed() {
+        return formed;
+    }
+
+    public void tryForm() {
+        if (level == null || level.isClientSide()) return;
+        if (!(getBlockState().getBlock() instanceof ElectricArcFurnace)) return; // don't form if not actually present
+
+        boolean valid = structureMatches();
+
+        if (valid && !formed) {
+            formed = true;
+            setFormedState(true);
+            linkParts();
+        } else if (!valid && formed) {
+            unform();
+        }
+    }
+
+    public void unform() {
+        if (level == null || level.isClientSide()) return;
+
+        formed = false;
+        setFormedState(false);
+        unlinkParts();
+    }
+
+    public void unformForRemoval() {
+        if (level == null || level.isClientSide()) return;
+
+        formed = false;
+        unlinkParts();
+    }
+
+    private void setFormedState(boolean value) {
+        BlockState state = getBlockState();
+        if (state.hasProperty(ElectricArcFurnace.FORMED) && state.getValue(ElectricArcFurnace.FORMED) != value) {
+            level.setBlock(worldPosition, state.setValue(ElectricArcFurnace.FORMED, value), 3);
+        }
+    }
+
+    private void linkParts() {
+        if (level == null || level.isClientSide()) return;
+
+        for (BlockPos p : getPartPositions()) {
+            BlockState st = level.getBlockState(p);
+
+            if (st.getBlock() instanceof ArcFurnaceCasingBlock && st.hasProperty(ArcFurnaceCasingBlock.FORMED)) {
+                if (!st.getValue(ArcFurnaceCasingBlock.FORMED)) {
+                    level.setBlock(p, st.setValue(ArcFurnaceCasingBlock.FORMED, true), 3);
+                }
+            }
+
+            BlockEntity be = level.getBlockEntity(p);
+            if (be instanceof EAFPartEntity part) {
+                part.setControllerPos(worldPosition);
+                part.setChanged();
+            }
+        }
+    }
+
+    private void unlinkParts() {
+        if (level == null || level.isClientSide()) return;
+
+        for (BlockPos p : getPartPositions()) {
+            BlockState st = level.getBlockState(p);
+
+            if (st.getBlock() instanceof ArcFurnaceCasingBlock && st.hasProperty(ArcFurnaceCasingBlock.FORMED)) {
+                if (st.getValue(ArcFurnaceCasingBlock.FORMED)) {
+                    level.setBlock(p, st.setValue(ArcFurnaceCasingBlock.FORMED, false), 3);
+                }
+            }
+
+            BlockEntity be = level.getBlockEntity(p);
+            if (be instanceof EAFPartEntity part && worldPosition.equals(part.getControllerPos())) {
+                part.setControllerPos(null);
+                part.setChanged();
+            }
+        }
+    }
+
 }

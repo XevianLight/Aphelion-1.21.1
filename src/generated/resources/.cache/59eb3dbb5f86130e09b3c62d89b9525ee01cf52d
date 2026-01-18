@@ -1,4 +1,5 @@
-// 1.21.1	2026-01-11T16:25:14.5769018	Loot Tables
+// 1.21.1	2026-01-17T20:45:45.6230298	Loot Tables
+69d8318ddba171526d1fabb87d9d93548ed8598e data/aphelion/loot_table/blocks/arc_furnace_casing.json
 05f08985e601d30116f67e2f07b48b03b40cdca6 data/aphelion/loot_table/blocks/block_steel.json
 ff43a9c3741faf10b1e156a7a74d5cfb035cc118 data/aphelion/loot_table/blocks/dimension_changer.json
 b63130d9c10485676303d729807b6fcaac080294 data/aphelion/loot_table/blocks/electric_arc_furnace.json

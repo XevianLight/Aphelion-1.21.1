@@ -44,7 +44,7 @@ public class AphelionCommand {
                                                             SpacePartitionSavedData.get(level).setOrbitForPartition(x, z, orbit);
 
                                                             context.getSource().sendSuccess(
-                                                                    () -> Component.translatable("aphelion.command.station.orbit.set", x, z, orbit.toString()),
+                                                                    () -> Component.translatable("command.aphelion.station.orbit.set", x, z, orbit.toString()),
                                                                     true
                                                             );
 
@@ -62,7 +62,7 @@ public class AphelionCommand {
                                                             SpacePartitionSavedData.get(level).overwriteAllExistingOrbits(orbit);
 
                                                             context.getSource().sendSuccess(
-                                                                    () -> Component.translatable("aphelion.command.station.orbit.overwriteall", orbit.toString()),
+                                                                    () -> Component.translatable("command.aphelion.station.orbit.overwriteall", orbit.toString()),
                                                                     true
                                                             );
 
@@ -82,12 +82,12 @@ public class AphelionCommand {
 
                                                     if (orbit != null) {
                                                         context.getSource().sendSuccess(
-                                                                () -> Component.translatable("aphelion.command.station.orbit.get", x, z, orbit.toString()),
+                                                                () -> Component.translatable("command.aphelion.station.orbit.get", x, z, orbit.toString()),
                                                                 true
                                                         );
                                                     } else {
                                                         context.getSource().sendSuccess(
-                                                                () -> Component.translatable("aphelion.command.station.orbit.get.unassigned", x, z),
+                                                                () -> Component.translatable("command.aphelion.station.orbit.get.unassigned", x, z),
                                                                 true
                                                         );
                                                     }
@@ -108,7 +108,7 @@ public class AphelionCommand {
 
                                                     if (success) {
                                                         context.getSource().sendSuccess(
-                                                                () -> Component.translatable("aphelion.command.station.orbit.cleared", x, z),
+                                                                () -> Component.translatable("command.aphelion.station.orbit.cleared", x, z),
                                                                 true
                                                         );
                                                     }
@@ -123,7 +123,7 @@ public class AphelionCommand {
                                                     SpacePartitionSavedData.get(level).clearAllOrbits();
 
                                                     context.getSource().sendSuccess(
-                                                            () -> Component.translatable("aphelion.command.station.orbit.clearall"),
+                                                            () -> Component.translatable("command.aphelion.station.orbit.clearall"),
                                                             true
                                                     );
 
@@ -153,7 +153,7 @@ public class AphelionCommand {
                                                                     );
 
                                                             context.getSource().sendSuccess(
-                                                                    () -> Component.translatable("aphelion.command.station.orbit.debug.posToKey", x, z, clickableOutput),
+                                                                    () -> Component.translatable("command.aphelion.station.orbit.debug.posToKey", x, z, clickableOutput),
                                                                     true
                                                             );
 
@@ -185,7 +185,7 @@ public class AphelionCommand {
                                                                     );
 
                                                             context.getSource().sendSuccess(
-                                                                    () -> Component.translatable("aphelion.command.station.orbit.debug.keyToPos", key, clickableOutput),
+                                                                    () -> Component.translatable("command.aphelion.station.orbit.debug.keyToPos", key, clickableOutput),
                                                                     true
                                                             );
 
@@ -213,7 +213,7 @@ public class AphelionCommand {
                                                                     );
 
                                                             context.getSource().sendSuccess(
-                                                                    () -> Component.translatable("aphelion.command.station.orbit.debug.getPartition", x, z, clickableOutput),
+                                                                    () -> Component.translatable("command.aphelion.station.orbit.debug.getPartition", x, z, clickableOutput),
                                                                     true
                                                             );
 
@@ -263,7 +263,7 @@ public class AphelionCommand {
                                                         player.teleportTo(space, destX, player.position().y, destZ, EnumSet.noneOf(RelativeMovement.class), player.getYRot(), player.getXRot());
 
                                                         context.getSource().sendSuccess(
-                                                                () -> Component.translatable("aphelion.command.station.teleport.success", player.getDisplayName(), clickablePos, clickableId),
+                                                                () -> Component.translatable("command.aphelion.station.teleport.success", player.getDisplayName(), clickablePos, clickableId),
                                                                 true
                                                         );
 
@@ -271,7 +271,7 @@ public class AphelionCommand {
                                                     }
 
                                                     context.getSource().sendFailure(
-                                                            Component.translatable("aphelion.command.station.teleport.failure")
+                                                            Component.translatable("command.aphelion.station.teleport.failure")
                                                     );
 
                                                     return Command.SINGLE_SUCCESS;

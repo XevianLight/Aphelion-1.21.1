@@ -4,10 +4,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.xevianlight.aphelion.Aphelion;
-import net.xevianlight.aphelion.block.custom.BlockSteel;
-import net.xevianlight.aphelion.block.custom.DimensionChangerBlock;
-import net.xevianlight.aphelion.block.custom.ElectricArcFurnace;
-import net.xevianlight.aphelion.block.custom.TestBlock;
+import net.xevianlight.aphelion.block.custom.*;
 
 public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Aphelion.MOD_ID);
@@ -16,4 +13,5 @@ public class ModBlocks {
     public static final  DeferredBlock<Block> BLOCK_STEEL = BLOCKS.register("block_steel", () -> new BlockSteel(BlockSteel.getProperties()));
     public static final  DeferredBlock<Block> DIMENSION_CHANGER = BLOCKS.register("dimension_changer", () -> new DimensionChangerBlock(DimensionChangerBlock.getProperties()));
     public static final  DeferredBlock<Block> ELECTRIC_ARC_FURNACE = BLOCKS.register("electric_arc_furnace", () -> new ElectricArcFurnace(ElectricArcFurnace.getProperties()));
+    public static final  DeferredBlock<Block> ARC_FURNACE_CASING_BLOCK = BLOCKS.register("arc_furnace_casing", () -> new ArcFurnaceCasingBlock(ArcFurnaceCasingBlock.getProperties()));
 }

@@ -11,6 +11,7 @@ import net.xevianlight.aphelion.core.init.*;
 import net.xevianlight.aphelion.fluid.BaseFluidType;
 import net.xevianlight.aphelion.fluid.ModFluidTypes;
 import net.xevianlight.aphelion.fluid.ModFluids;
+import net.xevianlight.aphelion.recipe.ModRecipes;
 import net.xevianlight.aphelion.screen.ElectricArcFurnaceScreen;
 import net.xevianlight.aphelion.screen.ModMenuTypes;
 import net.xevianlight.aphelion.screen.TestBlockScreen;
@@ -55,6 +56,7 @@ public class Aphelion {
         ModFluidTypes.FLUID_TYPES.register(MOD_BUS);
         ModFluids.register(MOD_BUS);
         ModSounds.register(MOD_BUS);
+        ModRecipes.register(MOD_BUS);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExtremeRocketry) to respond directly to events.
