@@ -4,6 +4,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.xevianlight.aphelion.core.init.ModBlocks;
 
@@ -22,6 +23,7 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.ELECTRIC_ARC_FURNACE.get());
         dropSelf(ModBlocks.ARC_FURNACE_CASING_BLOCK.get());
         dropSelf(ModBlocks.VACUUM_ARC_FURNACE_CONTROLLER.get());
+        dropOther(ModBlocks.VAF_MULTIBLOCK_DUMMY_BLOCK.get(), ItemStack.EMPTY.getItem());
     }
 
     @Override

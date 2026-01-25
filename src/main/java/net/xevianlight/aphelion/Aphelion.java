@@ -1,13 +1,17 @@
 package net.xevianlight.aphelion;
 
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.xevianlight.aphelion.block.dummy.renderer.MultiblockDummyRenderer;
 import net.xevianlight.aphelion.client.AphelionConfig;
+import net.xevianlight.aphelion.planet.AphelionPlanetJSONLoader;
 import net.xevianlight.aphelion.core.init.*;
 import net.xevianlight.aphelion.fluid.BaseFluidType;
 import net.xevianlight.aphelion.fluid.ModFluidTypes;
@@ -18,6 +22,7 @@ import net.xevianlight.aphelion.screen.ModMenuTypes;
 import net.xevianlight.aphelion.screen.TestBlockScreen;
 import net.xevianlight.aphelion.screen.VacuumArcFurnaceScreen;
 import org.slf4j.Logger;
+import net.xevianlight.aphelion.entites.vehicles.RocketRenderer;
 
 import com.mojang.logging.LogUtils;
 
@@ -59,6 +64,7 @@ public class Aphelion {
         ModFluids.register(MOD_BUS);
         ModSounds.register(MOD_BUS);
         ModRecipes.register(MOD_BUS);
+        ModEntities.register(MOD_BUS);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExtremeRocketry) to respond directly to events.
@@ -72,6 +78,10 @@ public class Aphelion {
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, AphelionConfig.SPEC);
+    }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, path);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
@@ -95,6 +105,12 @@ public class Aphelion {
         LOGGER.info("HELLO from server starting");
 
 
+    }
+
+    @SubscribeEvent
+    public void onAddReloadListeners(AddReloadListenerEvent event) {
+        // Set up the planet json listener. This reloads on /reload
+        event.addListener(new AphelionPlanetJSONLoader());
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
@@ -123,6 +139,11 @@ public class Aphelion {
             event.register(ModMenuTypes.TEST_BLOCK_MENU.get(), TestBlockScreen::new);
             event.register(ModMenuTypes.ELECTRIC_ARC_FURNACE_MENU.get(), ElectricArcFurnaceScreen::new);
             event.register(ModMenuTypes.VACUUM_ARC_FURNACE_MENU.get(), VacuumArcFurnaceScreen::new);
+        }
+
+        @SubscribeEvent
+        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerEntityRenderer(ModEntities.ROCKET.get(), RocketRenderer::new);
         }
     }
 }

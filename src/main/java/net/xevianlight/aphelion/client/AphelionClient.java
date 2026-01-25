@@ -1,7 +1,6 @@
 package net.xevianlight.aphelion.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.neoforged.api.distmarker.Dist;
@@ -44,6 +43,7 @@ public class AphelionClient {
     }
 
     public static void onAddReloadListener(BiConsumer<ResourceLocation, PreparableReloadListener> consumer) {
+        // Set up the dimension renderers json listener. This reloads on F3+T
         consumer.accept(ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "planet_renderers"), new AphelionDimensionRenderers());
     }
 
@@ -51,7 +51,7 @@ public class AphelionClient {
     public static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
         event.register(
                 ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "space"),
-                new net.xevianlight.aphelion.client.dimension.SpaceSkyEffects()
+                new net.xevianlight.aphelion.client.dimension.SpaceSkyEffects(null)
         );
     }
 }

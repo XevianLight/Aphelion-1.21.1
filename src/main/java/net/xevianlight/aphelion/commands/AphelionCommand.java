@@ -10,6 +10,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.*;
 import net.minecraft.commands.arguments.coordinates.ColumnPosArgument;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -17,10 +18,13 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.RelativeMovement;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.core.space.SpacePartitionSavedData;
+import net.xevianlight.aphelion.entites.vehicles.RocketEntity;
+import net.xevianlight.aphelion.util.RocketStructure;
 import net.xevianlight.aphelion.util.SpacePartitionHelper;
 
 import java.util.EnumSet;
@@ -62,7 +66,7 @@ public class AphelionCommand {
                                                             SpacePartitionSavedData.get(level).overwriteAllExistingOrbits(orbit);
 
                                                             context.getSource().sendSuccess(
-                                                                    () -> Component.translatable("command.aphelion.station.orbit.overwriteall", orbit.toString()),
+                                                                    () -> Component.translatable("command.aphelion.station.orbit.overwrite_all", orbit.toString()),
                                                                     true
                                                             );
 
@@ -123,7 +127,7 @@ public class AphelionCommand {
                                                     SpacePartitionSavedData.get(level).clearAllOrbits();
 
                                                     context.getSource().sendSuccess(
-                                                            () -> Component.translatable("command.aphelion.station.orbit.clearall"),
+                                                            () -> Component.translatable("command.aphelion.station.orbit.clear_all"),
                                                             true
                                                     );
 
@@ -280,6 +284,92 @@ public class AphelionCommand {
                                 )
                         )
                 )
+                .then(Commands.literal("planet")
+                        .then(Commands.literal("tp")
+                                .then(Commands.argument("dimension", DimensionArgument.dimension())
+                                        .executes(context -> {
+
+                                            var player = context.getSource().getEntity();
+                                            if (player == null || player.getServer() == null) {
+                                                context.getSource().sendFailure(Component.translatable("command.aphelion.station.teleport.failure"));
+                                                return Command.SINGLE_SUCCESS;
+                                            }
+
+                                            var targetDim = DimensionArgument.getDimension(context, "dimension");
+
+                                            ServerLevel targetLevel = player.getServer().getLevel(targetDim.dimension());
+
+                                            if (targetLevel == null) {
+                                                context.getSource().sendFailure(Component.translatable("command.aphelion.station.teleport.failure.invalid_level"));
+                                                return Command.SINGLE_SUCCESS;
+                                            }
+
+                                            player.teleportTo(targetLevel, player.position().x, player.position().y, player.position().z, EnumSet.noneOf(RelativeMovement.class), player.getYRot(), player.getXRot());
+
+                                            return Command.SINGLE_SUCCESS;
+                                        }))
+                        )
+                )
+                .then(Commands.literal("rocket")
+                        .then(Commands.literal("summon")
+                                .executes(context -> {
+                                    RocketStructure structure = new RocketStructure(s -> {
+                                        s.add(0,0,0, Blocks.IRON_BLOCK.defaultBlockState());
+                                    });
+                                    context.getSource().sendSuccess(() -> Component.translatable("command.aphelion.rocket.spawn.success"), true);
+                                    RocketEntity rocket = RocketEntity.spawnRocket(context.getSource().getLevel(), context.getSource().getEntity().blockPosition(), structure);
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                        .then(Commands.argument("entity", EntityArgument.entity())
+                                .then(Commands.literal("structure")
+                                        .then(Commands.literal("set")
+                                                .then(Commands.argument("nbt", CompoundTagArgument.compoundTag())
+                                                        .executes(context -> {
+                                                            Entity entity = EntityArgument.getEntity(context, "entity");
+                                                            if (entity instanceof RocketEntity rocket) {
+                                                                RocketStructure structure = new RocketStructure(RocketStructure::clear);
+                                                                structure.load(CompoundTagArgument.getCompoundTag(context, "nbt"));
+                                                                rocket.setStructure(structure);
+                                                            } else {
+                                                                context.getSource().sendFailure(Component.translatable("command.aphelion.rocket.entity_invalid"));
+                                                            }
+                                                            return Command.SINGLE_SUCCESS;
+                                                        })
+                                                )
+                                        )
+                                        .then(Commands.literal("get")
+                                                .executes(context -> {
+                                                    Entity entity = EntityArgument.getEntity(context, "entity");
+
+                                                    if (entity instanceof RocketEntity rocket) {
+                                                        RocketStructure structure = rocket.getStructure();
+                                                        CompoundTag tag = structure.save();
+
+                                                        Component clickableId = Component.literal(tag.toString())
+                                                                .withStyle(style -> style
+                                                                        .withClickEvent(new ClickEvent(
+                                                                                ClickEvent.Action.COPY_TO_CLIPBOARD,
+                                                                                tag.toString()
+                                                                        ))
+                                                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click")))
+                                                                        .withColor(ChatFormatting.AQUA)
+                                                                );
+
+                                                        context.getSource().sendSuccess(
+                                                                () -> clickableId,
+                                                                true
+                                                        );
+                                                    } else {
+                                                        context.getSource().sendFailure(Component.translatable("command.aphelion.rocket.entity_invalid"));
+                                                    }
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                )
+                        )
+                )
+
         );
     }
 }

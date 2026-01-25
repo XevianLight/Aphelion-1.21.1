@@ -23,13 +23,17 @@ public class ModBlockTagProvider extends BlockTagsProvider {
                 .add(ModBlocks.TEST_BLOCK.get())
                 .add(ModBlocks.ELECTRIC_ARC_FURNACE.get())
                 .add(ModBlocks.BLOCK_STEEL.get())
-                .add(ModBlocks.ARC_FURNACE_CASING_BLOCK.get());
+                .add(ModBlocks.ARC_FURNACE_CASING_BLOCK.get())
+                .add(ModBlocks.VACUUM_ARC_FURNACE_CONTROLLER.get())
+                .add(ModBlocks.VAF_MULTIBLOCK_DUMMY_BLOCK.get());
 
         tag(BlockTags.NEEDS_STONE_TOOL)
                 .add(ModBlocks.TEST_BLOCK.get())
                 .add(ModBlocks.ELECTRIC_ARC_FURNACE.get())
                 .add(ModBlocks.BLOCK_STEEL.get())
-                .add(ModBlocks.ARC_FURNACE_CASING_BLOCK.get());
+                .add(ModBlocks.ARC_FURNACE_CASING_BLOCK.get())
+                .add(ModBlocks.VACUUM_ARC_FURNACE_CONTROLLER.get())
+                .add(ModBlocks.VAF_MULTIBLOCK_DUMMY_BLOCK.get());
 
         tag(ModTags.Blocks.STORAGE_BLOCKS_STEEL)
                 .add(ModBlocks.BLOCK_STEEL.get());

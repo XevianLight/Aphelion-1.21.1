@@ -33,11 +33,14 @@
   "command.aphelion.station.orbit.get": "Station (%s, %s)'s orbit is assigned to %s",
   "command.aphelion.station.orbit.get.unassigned": "Station (%s, %s)'s orbit is not assigned",
   "command.aphelion.station.orbit.cleared": "Cleared station (%s, %s)'s orbit",
-  "command.aphelion.station.orbit.clearall": "Cleared all station orbits",
-  "command.aphelion.station.orbit.overwriteall": "Set all existing station orbits with %s (unassigned stations were not affected)",
+  "command.aphelion.station.orbit.clear_all": "Cleared all station orbits",
+  "command.aphelion.station.orbit.overwrite_all": "Set all existing station orbits with %s (unassigned stations were not affected)",
   "command.aphelion.station.orbit.debug.posToKey": "Key of station (%s, %s) is %s",
   "command.aphelion.station.orbit.debug.keyToPos": "Key %s belongs to station %s",
   "command.aphelion.station.teleport.success": "Teleported %s to station %s, id: %s",
   "command.aphelion.station.teleport.failure": "Failed to teleport, entity is null",
-  "command.aphelion.station.orbit.debug.getPartition": "Partition of %s, %s is %s"
+  "command.aphelion.station.teleport.failure.invalid_level": "Failed to teleport, target level is null",
+  "command.aphelion.station.orbit.debug.getPartition": "Partition of %s, %s is %s",
+  "command.aphelion.rocket.entity_invalid": "Entity is not a valid rocket",
+  "command.aphelion.rocket.spawn.success": "Summoned new rocket"
 }

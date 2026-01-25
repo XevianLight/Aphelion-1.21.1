@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.xevianlight.aphelion.client.dimension.DimensionRendererCache;
 import net.xevianlight.aphelion.client.dimension.DimensionSkyEffects;
+import net.xevianlight.aphelion.client.dimension.SpaceSkyEffects;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +19,7 @@ public abstract class DimensionSpecialEffectsMixin {
         ResourceLocation effectsId = type.effectsLocation();
 
         if (DimensionRendererCache.RENDERERS.containsKey(effectsId)) {
-            cir.setReturnValue(new DimensionSkyEffects(effectsId));
+            cir.setReturnValue(new SpaceSkyEffects(effectsId));
         }
     }
 }

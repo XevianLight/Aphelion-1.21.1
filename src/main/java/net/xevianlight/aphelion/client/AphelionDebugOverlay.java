@@ -2,6 +2,7 @@ package net.xevianlight.aphelion.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.api.distmarker.Dist;
@@ -21,13 +22,16 @@ public class AphelionDebugOverlay {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
-        // Only show in your space dimension (optional)
-        if (!mc.level.dimension().location().equals(ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "space"))) {
-            return;
-        }
+//        // Only show in your space dimension (optional)
+//        if (!mc.level.dimension().location().equals(ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "space"))) {
+//            return;
+//        }
 
-        var camPos = mc.gameRenderer.getMainCamera().getPosition();
-        ResourceLocation orbitId = SpaceSkyEffects.orbitForPos(camPos);
+        DimensionType type = mc.level.dimensionType();
+        ResourceLocation effectsId = type.effectsLocation();
+
+        var camPos = mc.gameRenderer.getMainCamera();
+        ResourceLocation orbitId = SpaceSkyEffects.resolvedId(effectsId, camPos);
 
         DimensionRenderer r = DimensionRendererCache.getOrDefault(orbitId);
 

@@ -12,14 +12,27 @@ import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.client.PartitionClientState;
 import net.xevianlight.aphelion.core.space.SpacePartitionSavedData;
 import net.xevianlight.aphelion.util.SpacePartitionHelper;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 public class SpaceSkyEffects extends DimensionSpecialEffects {
 
-    public SpaceSkyEffects() {
+    private final ResourceLocation effectsId;
+
+    public SpaceSkyEffects(@Nullable ResourceLocation effectsId) {
         super(192, false, SkyType.NORMAL, false, false);
+        this.effectsId = effectsId;
     }
 
+    public static ResourceLocation resolvedId(ResourceLocation effectsId, Camera camera) {
+        if (effectsId == null) {
+            return ResourceLocation.withDefaultNamespace("overworld");
+        }
+        if (effectsId.equals(Aphelion.id("space"))) {
+            return SpaceSkyEffects.orbitForPos(camera.getPosition()); // or inline this logic
+        }
+        return effectsId;
+    }
 
 
     @Override
@@ -49,8 +62,8 @@ public class SpaceSkyEffects extends DimensionSpecialEffects {
     @Override
     public boolean isFoggyAt(int i, int i1) {
 
-        ResourceLocation id = orbitForPos(net.minecraft.client.Minecraft.getInstance()
-                .gameRenderer.getMainCamera().getPosition());
+        ResourceLocation id = resolvedId(effectsId ,net.minecraft.client.Minecraft.getInstance()
+                .gameRenderer.getMainCamera());
 
         return DimensionRendererCache.getOrDefault(id).hasThickFog();
     }

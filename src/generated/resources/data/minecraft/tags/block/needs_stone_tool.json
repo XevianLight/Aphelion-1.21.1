@@ -3,6 +3,8 @@
     "aphelion:test_block",
     "aphelion:electric_arc_furnace",
     "aphelion:block_steel",
-    "aphelion:arc_furnace_casing"
+    "aphelion:arc_furnace_casing",
+    "aphelion:vacuum_arc_furnace_controller",
+    "aphelion:vaf_dummy_block"
   ]
 }

@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class BaseMultiblockDummyBlockEntity extends BlockEntity implements IMultiblockPart {
     @Nullable private BlockPos controllerPos;
-    private BlockState mimicing = Blocks.AIR.defaultBlockState();
+    private BlockState mimicking = Blocks.AIR.defaultBlockState();
 
     @Nullable
     private ItemStackHandler getControllerInventory() {
@@ -116,7 +116,7 @@ public class BaseMultiblockDummyBlockEntity extends BlockEntity implements IMult
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         if (controllerPos != null) tag.putLong("controller", controllerPos.asLong());
-        tag.put("mimic", NbtUtils.writeBlockState(mimicing));
+        tag.put("mimic", NbtUtils.writeBlockState(mimicking));
     }
 
     @Override
@@ -170,12 +170,12 @@ public class BaseMultiblockDummyBlockEntity extends BlockEntity implements IMult
 
     @Override
     public BlockState getMimicing() {
-        return mimicing;
+        return mimicking;
     }
 
     @Override
     public void setMimicing(BlockState newState) {
-        mimicing = newState;
+        mimicking = newState;
         setChanged();
         if (level != null) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);

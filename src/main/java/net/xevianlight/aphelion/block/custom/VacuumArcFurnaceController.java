@@ -68,7 +68,8 @@ public class VacuumArcFurnaceController extends BaseEntityBlock {
                 .sound(SoundType.NETHERITE_BLOCK)
                 .destroyTime(2f)
                 .explosionResistance(10f)
-                .requiresCorrectToolForDrops();
+                .requiresCorrectToolForDrops()
+                .lightLevel(state -> state.getValue(BlockStateProperties.LIT) ? 15 : 0);
     }
 
     public static Item.Properties getItemProperties() {
