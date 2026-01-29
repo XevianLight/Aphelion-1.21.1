@@ -2,7 +2,6 @@ package net.xevianlight.aphelion.core.init;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.block.dummy.entity.VAFMultiblockDummyBlockEntity;
