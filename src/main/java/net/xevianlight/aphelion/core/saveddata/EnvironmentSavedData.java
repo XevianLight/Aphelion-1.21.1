@@ -6,10 +6,15 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.core.saveddata.types.EnvironmentData;
+import net.xevianlight.aphelion.planet.Planet;
+import net.xevianlight.aphelion.planet.PlanetCache;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -69,46 +74,80 @@ public class EnvironmentSavedData extends SavedData {
         return data;
     }
 
-    public EnvironmentData getDataForPosition(BlockPos pos) {
-        int packed = envData.getOrDefault(pos.asLong(), EnvironmentData.DEFAULT_PACKED);
+    public EnvironmentData getDataForPosition(Level level, BlockPos pos) {
+        Planet planet = PlanetCache.getByDimensionOrNull(level.dimension());
+        int packedDefault;
+
+        if (planet == null) {
+            packedDefault = EnvironmentData.DEFAULT_PACKED;
+        } else {
+            EnvironmentData planetData = new EnvironmentData(planet.oxygen(), EnvironmentData.DEFAULT_TEMPERATURE, (short) planet.gravity());
+            packedDefault = planetData.pack();
+        }
+        int packed = envData.getOrDefault(pos.asLong(),packedDefault);
         return EnvironmentData.unpack(packed);
     }
 
-    public void setDataForPosition(BlockPos pos, EnvironmentData data) {
+    public void setDataForPosition(Level level, BlockPos pos, EnvironmentData data) {
         putOrRemove(pos.asLong(), data.pack());
     }
 
-    public boolean hasOxygen(BlockPos pos) {
-        var data = getDataForPosition(pos);
+    public boolean hasOxygen(Level level, BlockPos pos) {
+        var data = getDataForPosition(level, pos);
         return data.hasOxygen();
     }
 
-    public void setOxygen(BlockPos pos, boolean value) {
-        var data = getDataForPosition(pos);
+    public void setOxygen(Level level, BlockPos pos, boolean value) {
+        var data = getDataForPosition(level, pos);
         data.setOxygen(value);
+        Aphelion.LOGGER.info("Set oxygen for {} to {}", pos, value);
         putOrRemove(pos.asLong(), data.pack());
     }
 
-    public float getGravity(BlockPos pos) {
-        var data = getDataForPosition(pos);
+    public void setOxygen(Level level, Collection<BlockPos> positions, boolean value) {
+        for (BlockPos pos : positions) {
+            setOxygen(level, pos, value);
+        }
+    }
+
+    public void resetOxygen(Level level, BlockPos pos) {
+        var data = getDataForPosition(level, pos);
+        data.setOxygen(EnvironmentData.DEFAULT_OXYGEN);
+        putOrRemove(pos.asLong(), data.pack());
+    }
+
+    public float getGravity(Level level, BlockPos pos) {
+        var data = getDataForPosition(level, pos);
         return data.getGravity();
     }
 
-    public void setGravity(BlockPos pos, float value) {
-        var data = getDataForPosition(pos);
+    public void setGravity(Level level, BlockPos pos, float value) {
+        var data = getDataForPosition(level, pos);
         data.setGravity(value);
         putOrRemove(pos.asLong(), data.pack());
     }
 
-    public short getTemperature(BlockPos pos) {
-        var data = getDataForPosition(pos);
+    public void setGravity(Level level, Collection<BlockPos> positions, float value) {
+        for (BlockPos pos : positions) {
+            setGravity(level, pos, value);
+        }
+    }
+
+    public short getTemperature(Level level, BlockPos pos) {
+        var data = getDataForPosition(level, pos);
         return data.getTemperature();
     }
 
-    public void setTemperature(BlockPos pos, short value) {
-        var data = getDataForPosition(pos);
+    public void setTemperature(Level level, BlockPos pos, short value) {
+        var data = getDataForPosition(level, pos);
         data.setTemperature(value);
         putOrRemove(pos.asLong(), data.pack());
+    }
+
+    public void setTemperature(Level level, Collection<BlockPos> positions, short value) {
+        for (BlockPos pos : positions) {
+            setTemperature(level, pos, value);
+        }
     }
 
     private void putOrRemove(long key, int packed) {

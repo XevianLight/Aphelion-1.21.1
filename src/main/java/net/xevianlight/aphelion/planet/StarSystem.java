@@ -7,6 +7,6 @@ public record StarSystem(
         int temp
 ) {
     public static final Codec<StarSystem> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            Codec.INT.fieldOf("dimension").forGetter(StarSystem::temp)
+            Codec.INT.fieldOf("temp").forGetter(StarSystem::temp)
     ).apply(inst, StarSystem::new));
 }
