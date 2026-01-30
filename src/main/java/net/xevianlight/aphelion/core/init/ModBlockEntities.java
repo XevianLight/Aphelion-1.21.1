@@ -41,4 +41,9 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("vaf_multiblock_dummy_entity", () -> BlockEntityType.Builder.of(
                     VAFMultiblockDummyBlockEntity::new, ModBlocks.VAF_MULTIBLOCK_DUMMY_BLOCK.get()).build(null)
             );
+
+    public static final Supplier<BlockEntityType<OxygenTestBlockEntity>> OXYGEN_TEST_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("oxygen_test_block_entity", () -> BlockEntityType.Builder.of(
+                    OxygenTestBlockEntity::new, ModBlocks.OXYGEN_TEST_BLOCK.get()).build(null)
+            );
 }
