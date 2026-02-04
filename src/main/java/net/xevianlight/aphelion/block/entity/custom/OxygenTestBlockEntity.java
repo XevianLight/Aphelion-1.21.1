@@ -2,13 +2,16 @@ package net.xevianlight.aphelion.block.entity.custom;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import static net.xevianlight.aphelion.Aphelion.LOGGER;
 
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.xevianlight.aphelion.block.custom.base.TickableBlockEntity;
 import net.xevianlight.aphelion.core.init.ModBlockEntities;
 import net.xevianlight.aphelion.core.saveddata.EnvironmentSavedData;
 import net.xevianlight.aphelion.util.FloodFill3D;
@@ -16,11 +19,18 @@ import org.openjdk.nashorn.internal.runtime.regexp.joni.exception.ValueException
 
 import java.util.*;
 
-public class OxygenTestBlockEntity extends BlockEntity {
+public class OxygenTestBlockEntity extends BlockEntity implements TickableBlockEntity {
 
 
     public OxygenTestBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.OXYGEN_TEST_BLOCK_ENTITY.get(), pos, blockState);
+    }
+
+    public boolean isInitialized;
+
+    @Override
+    public boolean isInitialized() {
+        return this.isInitialized;
     }
 
     private LevelChunk lastChunk;
@@ -231,9 +241,8 @@ public class OxygenTestBlockEntity extends BlockEntity {
     int refreshAfter = 20;
 
 
-
-    public void tick(Level level, BlockPos pos, BlockState blockState) {
-        if (level.isClientSide) return;
+    @Override
+    public void serverTick(ServerLevel level, long time, BlockState blockState, BlockPos pos) {
         ticks++;
         if (ticks >= refreshAfter) {
             getEnclosedBlocks();
@@ -244,4 +253,18 @@ public class OxygenTestBlockEntity extends BlockEntity {
         }
     }
 
+    @Override
+    public void clientTick(ClientLevel level, long time, BlockState state, BlockPos pos) {
+
+    }
+
+    @Override
+    public void tick(Level entityLevel, long time, BlockState blockState, BlockPos pos) {
+
+    }
+
+    @Override
+    public void firstTick(Level level, BlockState state, BlockPos pos) {
+        this.isInitialized = true;
+    }
 }

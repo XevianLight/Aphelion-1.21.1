@@ -59,7 +59,7 @@ public class AphelionDebugOverlay {
         if (server != null) {
             singlePlayerLevel = server.getLevel(mc.level.dimension());
             if (singlePlayerLevel != null)
-                event.getLeft().add(" Oxygen: " + EnvironmentSavedData.get(singlePlayerLevel).hasOxygen(singlePlayerLevel, mc.player.blockPosition()));
+                event.getLeft().add(" Oxygen: " + EnvironmentSavedData.get(singlePlayerLevel).hasOxygen(singlePlayerLevel, mc.player.blockPosition().mutable().above()));
         }
     }
 }

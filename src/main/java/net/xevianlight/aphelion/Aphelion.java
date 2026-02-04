@@ -156,7 +156,8 @@ public class Aphelion {
 
         @SubscribeEvent
         public static void onClientTick(ClientTickEvent.Post e) {
-            EnvironmentSavedData.refreshFromIntegratedServerIfNeeded(Minecraft.getInstance(), 64, 10000);
+            if (!Minecraft.getInstance().gui.getDebugOverlay().showDebugScreen()) return;
+            EnvironmentSavedData.refreshFromIntegratedServerIfNeeded(Minecraft.getInstance(), 64, 50000);
         }
     }
 }
