@@ -23,6 +23,7 @@ public class OxygenService {
 
     public static boolean hasOxygen(Entity entity) {
         // Not sure if this is at the entity's feet, head, or the middle... research later
+        // Blockpos is from entity's feet ~Xev
         BlockPos entityBlockPos = BlockPos.containing(entity.getX(), entity.getY(), entity.getZ());
         return hasOxygen(entity.level(), entityBlockPos);
     }

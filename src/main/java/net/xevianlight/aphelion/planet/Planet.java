@@ -12,14 +12,14 @@ public record Planet(
         double orbitDistance,
         ResourceKey<StarSystem> system,
         boolean oxygen,
-        double gravity
+        float gravity
 ) {
     public static final Codec<Planet> CODEC = RecordCodecBuilder.create(inst -> inst.group(
             ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension").forGetter(Planet::dimension),
             Codec.DOUBLE.fieldOf("orbit_distance").forGetter(Planet::orbitDistance),
             ResourceKey.codec(ModRegistries.STAR_SYSTEM).fieldOf("star_system").forGetter(Planet::system),
             Codec.BOOL.fieldOf("oxygen").forGetter(Planet::oxygen),
-            Codec.DOUBLE.fieldOf("gravity").forGetter(Planet::gravity)
+            Codec.FLOAT.fieldOf("gravity").forGetter(Planet::gravity)
 
     ).apply(inst, Planet::new));
 }

@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public class EnvironmentSavedData extends SavedData {
 
-    private final Long2IntOpenHashMap envData = new Long2IntOpenHashMap();
+    private static final Long2IntOpenHashMap envData = new Long2IntOpenHashMap();
 
     private static final String NAME = "aphelion_environment";
 
