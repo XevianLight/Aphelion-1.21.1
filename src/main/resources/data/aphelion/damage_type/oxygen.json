@@ -1,0 +1,7 @@
+{
+  "message_id": "%1$s remembers' your §bOxygens",
+  "scaling": "never",
+  "exhaustion": 0,
+  "effects": "drowning",
+  "death_message_type": "default"
+}
