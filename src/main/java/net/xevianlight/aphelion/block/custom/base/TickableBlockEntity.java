@@ -7,7 +7,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface TickableBlockEntity {
-    void tick(Level entityLevel, long time, BlockState blockState, BlockPos pos);
 
     void clientTick(ClientLevel level, long time, BlockState state, BlockPos pos);
 

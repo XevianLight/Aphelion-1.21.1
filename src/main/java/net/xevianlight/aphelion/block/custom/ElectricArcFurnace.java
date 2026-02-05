@@ -25,6 +25,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.xevianlight.aphelion.block.custom.base.BasicEntityBlock;
+import net.xevianlight.aphelion.block.custom.base.BasicHorizontalEntityBlock;
 import net.xevianlight.aphelion.block.entity.custom.ElectricArcFurnaceEntity;
 import net.xevianlight.aphelion.core.init.ModBlockEntities;
 import net.xevianlight.aphelion.util.AphelionBlockStateProperties;
@@ -34,14 +36,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ElectricArcFurnace extends BaseEntityBlock {
+public class ElectricArcFurnace extends BasicHorizontalEntityBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final BooleanProperty FORMED = AphelionBlockStateProperties.FORMED;
 
     public ElectricArcFurnace(Properties properties) {
-        super(properties);
+        super(properties, true);
         this.registerDefaultState(this.getStateDefinition().any()
                 .setValue(FORMED, false));
     }
@@ -162,25 +164,6 @@ public class ElectricArcFurnace extends BaseEntityBlock {
             return getRedstoneSignalFromItemHandler(electricArcFurnaceEntity.inventory, slots);
 
         return 0;
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        if (level.isClientSide) {
-            return null;
-        }
-        return createTickerHelper(blockEntityType, ModBlockEntities.ELECTRIC_ARC_FURNACE_ENTITY.get(), (level1, blockPos, blockState, electricArcFurnaceEntity) -> electricArcFurnaceEntity.tick(level1, blockPos, blockState));
-
-    }
-
-    @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
-        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
-    }
-
-    @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
-        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override

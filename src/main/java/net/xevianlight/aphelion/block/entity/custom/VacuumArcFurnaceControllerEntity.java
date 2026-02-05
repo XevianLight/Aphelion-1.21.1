@@ -1,5 +1,6 @@
 package net.xevianlight.aphelion.block.entity.custom;
 
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -8,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
@@ -28,14 +30,14 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.xevianlight.aphelion.block.custom.ElectricArcFurnace;
+import net.xevianlight.aphelion.block.custom.VacuumArcFurnaceController;
+import net.xevianlight.aphelion.block.custom.base.TickableBlockEntity;
 import net.xevianlight.aphelion.block.entity.energy.ModEnergyStorage;
 import net.xevianlight.aphelion.core.init.ModBlockEntities;
 import net.xevianlight.aphelion.core.init.ModBlocks;
 import net.xevianlight.aphelion.recipe.ElectricArcFurnaceRecipe;
 import net.xevianlight.aphelion.recipe.ElectricArcFurnaceRecipeInput;
 import net.xevianlight.aphelion.recipe.ModRecipes;
-import net.xevianlight.aphelion.screen.VacuumArcFurnaceMenu;
 import net.xevianlight.aphelion.screen.ElectricArcFurnaceMenu;
 import net.xevianlight.aphelion.util.AphelionBlockStateProperties;
 import net.xevianlight.aphelion.util.IMultiblockController;
@@ -45,16 +47,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class VacuumArcFurnaceControllerEntity extends BlockEntity implements MenuProvider, IMultiblockController {
+public class VacuumArcFurnaceControllerEntity extends BlockEntity implements MenuProvider, IMultiblockController, TickableBlockEntity {
 
     private final int SIZE = 4;
-    private int ENERGY_CAPACITY = 64000;
-    private int MAX_TRANSFER = 320;
+    private final int ENERGY_CAPACITY = 64000;
+    private final int MAX_TRANSFER = 320;
     private int progress = 0;
     private int maxProgress = 100;
     private final int DEFAULT_MAX_PROGRESS = 100;
     private final ContainerData data;
-    private int MACHINE_ENERGY_COST = 20;
+    private final int MACHINE_ENERGY_COST = 20;
 
     public static final int INPUT_SLOT = 0;
     public static final int SECONDARY_INPUT_SLOT = 1;
@@ -99,7 +101,7 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if(!level.isClientSide()) {
+            if (level != null && !level.isClientSide()) {
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
         }
@@ -114,7 +116,8 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
 //        }
     };
 
-    public void tick(Level level, BlockPos pos, BlockState blockState) {
+    @Override
+    public void serverTick(ServerLevel level, long time, BlockState state, BlockPos pos) {
 
         if (dirty) {
             dirty = false;
@@ -124,7 +127,7 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
 
         BlockState newBlockState = level.getBlockState(pos);
 
-        if (!blockState.getValue(AphelionBlockStateProperties.FORMED))
+        if (!state.getValue(AphelionBlockStateProperties.FORMED))
             return;
 
         chargeFromItem();
@@ -135,7 +138,7 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
                 // Recipe detected! We have enough energy to process
                 progress++;
                 useEnergy();
-                level.setBlockAndUpdate(pos, newBlockState.setValue(ElectricArcFurnace.LIT, true));
+                level.setBlockAndUpdate(pos, newBlockState.setValue(VacuumArcFurnaceController.LIT, true));
                 setChanged(level, pos, newBlockState);
 
                 if (hasCraftingFinished()) {
@@ -144,13 +147,13 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
                 }
             } else if (hasFurnaceRecipe(INPUT_SLOT) && !hasEnoughEnergyToCraft(MACHINE_ENERGY_COST)) {
                 // Recipe detected but we ran out of power
-                level.setBlockAndUpdate(pos, newBlockState.setValue(ElectricArcFurnace.LIT, false));
+                level.setBlockAndUpdate(pos, newBlockState.setValue(VacuumArcFurnaceController.LIT, false));
                 setChanged(level, pos, newBlockState);
                 progress = progress > 0 ? progress - 1 : 0;
             } else {
                 // Invalid recipe
                 resetProgress();
-                level.setBlockAndUpdate(pos, newBlockState.setValue(ElectricArcFurnace.LIT, false));
+                level.setBlockAndUpdate(pos, newBlockState.setValue(VacuumArcFurnaceController.LIT, false));
                 setChanged(level, pos, newBlockState);
             }
         } else {
@@ -160,7 +163,7 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
                     // Alloy recipe detected! We have enough energy to process
                     progress++;
                     useEnergy();
-                    level.setBlockAndUpdate(pos, newBlockState.setValue(ElectricArcFurnace.LIT, true));
+                    level.setBlockAndUpdate(pos, newBlockState.setValue(VacuumArcFurnaceController.LIT, true));
                     setChanged(level, pos, newBlockState);
 
                     if (hasCraftingFinished()) {
@@ -169,14 +172,14 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
                     }
                 } else {
                     // Recipe detected but we ran out of power
-                    level.setBlockAndUpdate(pos, newBlockState.setValue(ElectricArcFurnace.LIT, false));
+                    level.setBlockAndUpdate(pos, newBlockState.setValue(VacuumArcFurnaceController.LIT, false));
                     setChanged(level, pos, newBlockState);
                     progress = progress > 0 ? progress - 1 : 0;
                 }
             } else {
                 // Invalid recipe
                 resetProgress();
-                level.setBlockAndUpdate(pos, newBlockState.setValue(ElectricArcFurnace.LIT, false));
+                level.setBlockAndUpdate(pos, newBlockState.setValue(VacuumArcFurnaceController.LIT, false));
                 setChanged(level, pos, newBlockState);
             }
         }
@@ -411,7 +414,7 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
     @Override
     public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
         if (isFormed())
-            return new VacuumArcFurnaceMenu(i, inventory, this, this.data);
+            return new ElectricArcFurnaceMenu(i, inventory, this, this.data);
         return new ElectricArcFurnaceMenu(i, inventory, this, this.data);
     }
 
@@ -526,5 +529,15 @@ public class VacuumArcFurnaceControllerEntity extends BlockEntity implements Men
     @Override
     public void markDirty() {
         dirty = true;
+    }
+
+    @Override
+    public void clientTick(ClientLevel level, long time, BlockState state, BlockPos pos) {
+
+    }
+
+    @Override
+    public void firstTick(Level level, BlockState state, BlockPos pos) {
+
     }
 }

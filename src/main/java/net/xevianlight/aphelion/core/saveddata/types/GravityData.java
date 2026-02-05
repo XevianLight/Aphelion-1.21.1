@@ -4,7 +4,7 @@ package net.xevianlight.aphelion.core.saveddata.types;
 // We never store GravityData for any reason other than to test its values or to pack it into an integer.
 public record GravityData (float gravity, float radius) {
 
-    public static final float DEFAULT_GRAVITY = 9.80665f; // 1G
+    public static final float DEFAULT_GRAVITY = 32.00f; // Vanilla acceleration
     public static final float GRAVITY_PRECISION = 100.0f;
     public static final float RADIUS_PRECISION = 100.0f;
     public static final float MAX_RADIUS = Short.MAX_VALUE / RADIUS_PRECISION;

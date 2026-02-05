@@ -14,10 +14,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -25,25 +25,25 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.xevianlight.aphelion.block.entity.custom.ElectricArcFurnaceEntity;
+import net.xevianlight.aphelion.block.custom.base.BasicHorizontalEntityBlock;
 import net.xevianlight.aphelion.block.entity.custom.VacuumArcFurnaceControllerEntity;
-import net.xevianlight.aphelion.core.init.ModBlockEntities;
 import net.xevianlight.aphelion.util.AphelionBlockStateProperties;
 import net.xevianlight.aphelion.util.IMultiblockController;
 import net.xevianlight.aphelion.util.MultiblockHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class VacuumArcFurnaceController extends BaseEntityBlock {
+public class VacuumArcFurnaceController extends BasicHorizontalEntityBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final BooleanProperty FORMED = AphelionBlockStateProperties.FORMED;
 
     public VacuumArcFurnaceController(Properties properties) {
-        super(properties);
+        super(properties, true);
         this.registerDefaultState(this.getStateDefinition().any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(LIT, false)
@@ -77,7 +77,7 @@ public class VacuumArcFurnaceController extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult result) {
+    public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult result) {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof VacuumArcFurnaceControllerEntity vacuumArcFurnaceEntity) {
             if (vacuumArcFurnaceEntity.isFormed())
                 serverPlayer.openMenu(new SimpleMenuProvider(vacuumArcFurnaceEntity, Component.literal("Vacuum Arc Furnace")), pos);
@@ -88,21 +88,16 @@ public class VacuumArcFurnaceController extends BaseEntityBlock {
 
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos blockPos, @NotNull BlockState blockState) {
         return new VacuumArcFurnaceControllerEntity(blockPos, blockState);
     }
 
     @Override
-    public RenderShape getRenderShape(BlockState pState) {
-        return RenderShape.MODEL;
-    }
-
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+    protected void onRemove(BlockState state, Level level, @NotNull BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!level.isClientSide && state.getBlock() != newState.getBlock()) {
             BlockEntity blockEntity= level.getBlockEntity(pos);
             if (blockEntity instanceof VacuumArcFurnaceControllerEntity vacuumArcFurnaceEntity) {
-                if(state.getValue(FORMED)) MultiblockHelper.unformForRemoval(level, state, pos, vacuumArcFurnaceEntity.SHAPE, AphelionBlockStateProperties.FORMED);
+                if(state.getValue(FORMED)) MultiblockHelper.unformForRemoval(level, state, pos, VacuumArcFurnaceControllerEntity.SHAPE, AphelionBlockStateProperties.FORMED);
                 vacuumArcFurnaceEntity.drops();
             }
         }
@@ -110,7 +105,7 @@ public class VacuumArcFurnaceController extends BaseEntityBlock {
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    protected void onPlace(BlockState state, Level level, @NotNull BlockPos pos, @NotNull BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!level.isClientSide() && oldState.getBlock() != state.getBlock()) {
             BlockEntity blockEntity= level.getBlockEntity(pos);
@@ -120,7 +115,7 @@ public class VacuumArcFurnaceController extends BaseEntityBlock {
         }
     }
 
-    public static int getRedstoneSignalFromItemHandler(@javax.annotation.Nullable ItemStackHandler itemStackHandler, List<Integer> slots) {
+    public static int getRedstoneSignalFromItemHandler(@Nullable ItemStackHandler itemStackHandler, List<Integer> slots) {
         if (itemStackHandler == null) {
             return 0;
         } else {
@@ -141,22 +136,22 @@ public class VacuumArcFurnaceController extends BaseEntityBlock {
     }
 
     @Override
-    protected boolean isSignalSource(BlockState state) {
+    protected boolean isSignalSource(@NotNull BlockState state) {
         return true;
     }
 
     @Override
-    protected int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+    protected int getSignal(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull Direction direction) {
         return super.getSignal(state, level, pos, direction);
     }
 
     @Override
-    protected boolean hasAnalogOutputSignal(BlockState state) {
+    protected boolean hasAnalogOutputSignal(@NotNull BlockState state) {
         return true;
     }
 
     @Override
-    protected int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
+    protected int getAnalogOutputSignal(@NotNull BlockState blockState, Level level, @NotNull BlockPos pos) {
         List<Integer> slots = new ArrayList<>();
         slots.add(VacuumArcFurnaceControllerEntity.INPUT_SLOT);
         slots.add(VacuumArcFurnaceControllerEntity.SECONDARY_INPUT_SLOT);
@@ -167,25 +162,6 @@ public class VacuumArcFurnaceController extends BaseEntityBlock {
             return getRedstoneSignalFromItemHandler(vacuumArcFurnaceEntity.inventory, slots);
 
         return 0;
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        if (level.isClientSide) {
-            return null;
-        }
-        return createTickerHelper(blockEntityType, ModBlockEntities.VACUUM_ARC_FURNACE_ENTITY.get(), (level1, blockPos, blockState, vacuumArcFurnaceEntity) -> vacuumArcFurnaceEntity.tick(level1, blockPos, blockState));
-
-    }
-
-    @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
-        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
-    }
-
-    @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
-        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override

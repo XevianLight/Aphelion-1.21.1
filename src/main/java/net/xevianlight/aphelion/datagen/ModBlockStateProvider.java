@@ -25,6 +25,12 @@ public class ModBlockStateProvider extends BlockStateProvider {
         blockItem(ModBlocks.ELECTRIC_ARC_FURNACE);
         blockItem(ModBlocks.VACUUM_ARC_FURNACE_CONTROLLER);
 
+        horizontalBlock(ModBlocks.ROCKET_ASSEMBLER_BLOCK.get(), models().orientable("aphelion:rocket_assembler_block",
+                modLoc("block/test_block"),
+                mcLoc("block/furnace_front"),
+                modLoc("block/test_block")));
+        blockItem(ModBlocks.ROCKET_ASSEMBLER_BLOCK);
+
         blockWithItem(ModBlocks.BLOCK_STEEL);
         blockWithItem(ModBlocks.DIMENSION_CHANGER);
 
