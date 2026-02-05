@@ -4,7 +4,8 @@ public class GravityData {
     private float accel;
     private float radius;
 
-    public static final float DEFAULT_GRAVITY = 9.80665f; // 1G
+    public static final float ONE_G = 9.80665f;
+    public static final float DEFAULT_GRAVITY = ONE_G; // 1G
     public static final float GRAVITY_PRECISION = 100.0f;
     public static final float RADIUS_PRECISION = 100.0f;
     public static final float MAX_RADIUS = Short.MAX_VALUE / RADIUS_PRECISION;

@@ -115,13 +115,17 @@ public class GravitySavedData extends SavedData {
      * Returns the strongest acceleration among all gravity regions that overlap this block position
      */
     public float getGravityMax (BlockPos pos) {
-        float max = 0;
+        float max = -1;
 
         List<GravityData> regions = getGravityRegions(pos);
 
         for (var e : regions) {
             var accel = e.getAccel();
             if (accel > max) max = accel;
+        }
+
+        if (max == -1) {
+            max = GravityData.DEFAULT_GRAVITY;
         }
 
         return max;
