@@ -42,6 +42,8 @@ public class OxygenTestRenderer implements BlockEntityRenderer<OxygenTestBlockEn
     // If in debug mode, renders a model made from the blocks
     // that are currently returned by toBlockPositions(OxygenTestBlockEntity).
     public void render(OxygenTestBlockEntity be, float partialTick, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
+        if (true) return; // i think this is all deprecated now
+
         // This bit's debug only, folks!
         if (!Minecraft.getInstance().gui.getDebugOverlay().showDebugScreen()) return;
 

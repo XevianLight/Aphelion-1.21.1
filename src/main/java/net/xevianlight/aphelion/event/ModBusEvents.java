@@ -16,9 +16,11 @@ import net.xevianlight.aphelion.core.init.ModBlockEntities;
 import net.xevianlight.aphelion.network.ClientPlayerStateUpdateHandler;
 import net.xevianlight.aphelion.network.RocketPayloadHandlers;
 import net.xevianlight.aphelion.network.PartitionPayloadHandler;
+import net.xevianlight.aphelion.network.UpdateGravityTestBlockHandler;
 import net.xevianlight.aphelion.network.packet.ClientPlayerStateUpdatePacket;
 import net.xevianlight.aphelion.network.packet.PartitionPayload;
 import net.xevianlight.aphelion.network.packet.RocketLaunchPayload;
+import net.xevianlight.aphelion.network.packet.UpdateGravityTestBlockPacket;
 
 @EventBusSubscriber(modid = Aphelion.MOD_ID)
 public class ModBusEvents {
@@ -57,5 +59,10 @@ public class ModBusEvents {
                 ClientPlayerStateUpdateHandler::handleDataOnMain
                 );
 
+        registrar.playToServer(
+                UpdateGravityTestBlockPacket.TYPE,
+                UpdateGravityTestBlockPacket.STREAM_CODEC,
+                UpdateGravityTestBlockHandler::handleDataOnMain
+                );
     }
 }

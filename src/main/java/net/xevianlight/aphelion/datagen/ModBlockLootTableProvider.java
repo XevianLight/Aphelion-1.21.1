@@ -26,6 +26,8 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.OXYGEN_TEST_BLOCK.get());
         dropOther(ModBlocks.VAF_MULTIBLOCK_DUMMY_BLOCK.get(), ItemStack.EMPTY.getItem());
         dropSelf(ModBlocks.LAUNCH_PAD.get());
+        dropSelf(ModBlocks.GRAVITY_TEST_BLOCK.get());
+        dropSelf(ModBlocks.ROCKET_ASSEMBLER_BLOCK.get());
     }
 
     @Override

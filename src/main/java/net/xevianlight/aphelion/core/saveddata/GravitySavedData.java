@@ -94,6 +94,9 @@ public class GravitySavedData extends SavedData {
         gravityData.put(pos.asLong(), data.pack());
     }
 
+    public Long2IntOpenHashMap _debug_getGravityData() {
+        return gravityData;
+    }
 
 
     /**

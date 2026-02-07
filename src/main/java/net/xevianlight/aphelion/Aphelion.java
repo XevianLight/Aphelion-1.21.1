@@ -24,10 +24,7 @@ import net.xevianlight.aphelion.fluid.BaseFluidType;
 import net.xevianlight.aphelion.fluid.ModFluidTypes;
 import net.xevianlight.aphelion.fluid.ModFluids;
 import net.xevianlight.aphelion.recipe.ModRecipes;
-import net.xevianlight.aphelion.screen.ElectricArcFurnaceScreen;
-import net.xevianlight.aphelion.screen.ModMenuTypes;
-import net.xevianlight.aphelion.screen.TestBlockScreen;
-import net.xevianlight.aphelion.screen.VacuumArcFurnaceScreen;
+import net.xevianlight.aphelion.screen.*;
 import org.slf4j.Logger;
 import net.xevianlight.aphelion.entites.vehicles.RocketRenderer;
 
@@ -147,6 +144,7 @@ public class Aphelion {
             event.register(ModMenuTypes.TEST_BLOCK_MENU.get(), TestBlockScreen::new);
             event.register(ModMenuTypes.ELECTRIC_ARC_FURNACE_MENU.get(), ElectricArcFurnaceScreen::new);
             event.register(ModMenuTypes.VACUUM_ARC_FURNACE_MENU.get(), VacuumArcFurnaceScreen::new);
+            event.register(ModMenuTypes.GRAVITY_TEST_BLOCK_MENU.get(), GravityTestBlockScreen::new);
         }
 
         @SubscribeEvent

@@ -13,9 +13,13 @@ import net.xevianlight.aphelion.core.saveddata.types.GravityData;
 
 public class GravityService {
 
-    ///  If i did this right, there SHOULDN'T be a way to break client/server separation with this...
-    ///  you shouldn't be able to get the "ServerLevel" object from the Client side unless you're already
-    ///  breaking that rule, in which case, go for it lmfao
+    public static void setGravityArea(ServerLevel level, BlockPos pos, float accel, int radius) {
+        GravitySavedData.get(level).setGravityRegion(pos, new GravityData(accel, radius));
+    }
+
+    public static void removeGravityArea(ServerLevel level, BlockPos pos) {
+        GravitySavedData.get(level).removeGravityRegion(pos);
+    }
 
     public static float getGravityAccel(Level level, BlockPos pos) {
         if (level.isClientSide) {

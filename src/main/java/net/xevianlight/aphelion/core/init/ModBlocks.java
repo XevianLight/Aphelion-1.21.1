@@ -6,6 +6,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.block.custom.*;
 import net.xevianlight.aphelion.block.dummy.VAFMultiblockDummyBlock;
+import net.xevianlight.aphelion.block.entity.custom.GravityTestBlockEntity;
 
 public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Aphelion.MOD_ID);
@@ -20,4 +21,5 @@ public class ModBlocks {
     public static final  DeferredBlock<Block> VAF_MULTIBLOCK_DUMMY_BLOCK = BLOCKS.register("vaf_dummy_block", () -> new VAFMultiblockDummyBlock(VAFMultiblockDummyBlock.getProperties()));
     public static final DeferredBlock<Block> OXYGEN_TEST_BLOCK = BLOCKS.register("oxygen_test_block", () -> new OxygenTestBlock(OxygenTestBlock.getProperties()));
     public static final DeferredBlock<Block> ROCKET_ASSEMBLER_BLOCK = BLOCKS.register("rocket_assemblerblock", () -> new RocketAssemblerBlock(RocketAssemblerBlock.getProperties()));
+    public static final DeferredBlock<Block> GRAVITY_TEST_BLOCK = BLOCKS.register("gravity_test_block", () -> new GravityTestBlock(GravityTestBlock.getProperties()));
 }
