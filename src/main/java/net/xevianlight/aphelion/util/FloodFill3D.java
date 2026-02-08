@@ -47,7 +47,7 @@ public final class FloodFill3D {
     };
 
     public static Set<BlockPos> run(Level level, BlockPos start, int limit, SolidBlockPredicate predicate, boolean retainOrder) {
-        level.getProfiler().push("adastra-floodfill");
+        level.getProfiler().push("aphelion-floodfill");
 
         LongSet positions = retainOrder ? new LongLinkedOpenHashSet(limit) : new LongOpenHashSet(limit);
         LongArrayFIFOQueue queue = new LongArrayFIFOQueue(limit);

@@ -19,5 +19,6 @@ public class ModBlocks {
     public static final  DeferredBlock<Block> VACUUM_ARC_FURNACE_CONTROLLER = BLOCKS.register("vacuum_arc_furnace_controller", () -> new VacuumArcFurnaceController(VacuumArcFurnaceController.getProperties()));
     public static final  DeferredBlock<Block> VAF_MULTIBLOCK_DUMMY_BLOCK = BLOCKS.register("vaf_dummy_block", () -> new VAFMultiblockDummyBlock(VAFMultiblockDummyBlock.getProperties()));
     public static final DeferredBlock<Block> OXYGEN_TEST_BLOCK = BLOCKS.register("oxygen_test_block", () -> new OxygenTestBlock(OxygenTestBlock.getProperties()));
-    public static final DeferredBlock<Block> ROCKET_ASSEMBLER_BLOCK = BLOCKS.register("rocket_assembler_block", () -> new RocketAssemblerBlock(RocketAssemblerBlock.getProperties()));
+    public static final DeferredBlock<Block> ROCKET_ASSEMBLER = BLOCKS.register("rocket_assembler", () -> new RocketAssembler(RocketAssembler.getProperties()));
+    public static final DeferredBlock<Block> ROCKET_SEAT = BLOCKS.register("rocket_seat", () -> new RocketSeat(RocketSeat.getProperties()));
 }

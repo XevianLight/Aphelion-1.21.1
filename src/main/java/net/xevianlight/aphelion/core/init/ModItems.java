@@ -7,7 +7,6 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.block.custom.*;
-import net.xevianlight.aphelion.block.dummy.VAFMultiblockDummyBlock;
 import net.xevianlight.aphelion.item.*;
 
 public class ModItems {
@@ -37,6 +36,7 @@ public static final DeferredItem<Item> MUSIC_DISC_BIT_SHIFT = ITEMS.register("mu
     public static final DeferredItem<BlockItem> VACUUM_ARC_FURNACE_CONTROLLER = ITEMS.register("vacuum_arc_furnace_controller", () -> new BlockItem(ModBlocks.VACUUM_ARC_FURNACE_CONTROLLER.get(), VacuumArcFurnaceController.getItemProperties()));
     public static final DeferredItem<BlockItem> OXYGEN_TEST_BLOCK = ITEMS.register("oxygen_test_block", () -> new BlockItem(ModBlocks.OXYGEN_TEST_BLOCK.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> LAUNCH_PAD = ITEMS.register("launch_pad", () -> new BlockItem(ModBlocks.LAUNCH_PAD.get(), LaunchPad.getItemProperties()));
-    public static final DeferredItem<BlockItem> ROCKET_ASSEMBLER_BLOCK = ITEMS.register("rocket_assembler_block", () -> new BlockItem(ModBlocks.ROCKET_ASSEMBLER_BLOCK.get(), RocketAssemblerBlock.getItemProperties()));
+    public static final DeferredItem<BlockItem> ROCKET_ASSEMBLER = ITEMS.register("rocket_assembler", () -> new BlockItem(ModBlocks.ROCKET_ASSEMBLER.get(), RocketAssembler.getItemProperties()));
+    public static final DeferredItem<BlockItem> ROCKET_SEAT = ITEMS.register("rocket_seat", () -> new BlockItem(ModBlocks.ROCKET_SEAT.get(), RocketSeat.getItemProperties()));
 //    public static final DeferredItem<BlockItem> VAF_MULTIBLOCK_DUMMY_BLOCK = ITEMS.register("vaf_multiblock_dummy_block", () -> new BlockItem(ModBlocks.VAF_MULTIBLOCK_DUMMY_BLOCK.get(), VAFMultiblockDummyBlock.getItemProperties()));
 }

@@ -44,5 +44,8 @@ public class ModBlockTagProvider extends BlockTagsProvider {
         tag(ModTags.Blocks.LAUNCH_PAD)
                 .add(ModBlocks.LAUNCH_PAD.get());
 
+        tag(ModTags.Blocks.ROCKET_SEAT)
+                .add(ModBlocks.ROCKET_SEAT.get());
+
     }
 }

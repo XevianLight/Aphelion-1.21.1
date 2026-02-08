@@ -51,7 +51,7 @@ public class RocketEntity extends VehicleEntity implements IEntityWithComplexSpa
     private double landingPosX;
     private double landingPosZ;
 
-    private static final double TELEPORT_Y = 1000.0;
+    private static final double TELEPORT_Y = 600.0;
     private static final double ASCEND_ACCEL = 0.0125;
     private static final double DESCEND_SPEED = 1;
 
@@ -224,6 +224,7 @@ public class RocketEntity extends VehicleEntity implements IEntityWithComplexSpa
         if (isOnGround()) {
             resetDeltaMovement();
             setPhase(FlightPhase.LANDED);
+            yVel = 0;
             return;
         }
         setDeltaMovement(0, -DESCEND_SPEED, 0);
@@ -436,15 +437,24 @@ public class RocketEntity extends VehicleEntity implements IEntityWithComplexSpa
         return EntityDimensions.scalable(w, h).withEyeHeight(Math.max(0.1f, h - 0.2f));
     }
 
+
+    public Vec3 getSeatWorldPos(int seatIndex, float partialTicks) {
+        int packed = structure.packedSeatAt(seatIndex);
+
+        int dx = RocketStructure.unpackX(packed);
+        int dy = RocketStructure.unpackY(packed);
+        int dz = RocketStructure.unpackZ(packed);
+
+        return this.position().add(dx, dy, dz);
+    }
+
     @Override
-    protected void positionRider(@NotNull Entity passenger, @NotNull MoveFunction moveFunction) {
+    public void positionRider(Entity passenger, MoveFunction move) {
         if (!this.hasPassenger(passenger)) return;
 
-        // Choose a stable seat position relative to the rocket.
-        // Example: centered, and 1.5 blocks above your base Y.
-        Vec3 seat = new Vec3(this.getX(), this.getY() + structure.computeExtents().toLocalAABB().getYsize() / 2, this.getZ());
+        Vec3 seat = getSeatWorldPos(0, 0); // primary seat
+        move.accept(passenger, seat.x, seat.y, seat.z);
 
-        moveFunction.accept(passenger, seat.x, seat.y, seat.z);
     }
 
     @Override

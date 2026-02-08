@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "aphelion:rocket_assembler_block"
+          "name": "aphelion:rocket_assembler"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "aphelion:blocks/rocket_assembler_block"
+  "random_sequence": "aphelion:blocks/rocket_assembler"
 }

@@ -20,6 +20,7 @@ public class ModTags {
         public static final TagKey<Block> LAUNCH_PAD = createTag("launch_pad");
         public static final TagKey<Block> PASSES_FLOOD_FILL = createTag("passes_flood_fill");
         public static final TagKey<Block> BLOCKS_FLOOD_FILL = createTag("blocks_flood_fill");
+        public static final TagKey<Block> ROCKET_SEAT = createTag("rocket_seat");
 
         private static TagKey<Block> commonTag(String name) {
             return BlockTags.create(ResourceLocation.fromNamespaceAndPath("c", name));

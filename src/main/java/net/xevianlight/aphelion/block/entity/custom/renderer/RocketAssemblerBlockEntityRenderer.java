@@ -21,7 +21,7 @@ public class RocketAssemblerBlockEntityRenderer implements BlockEntityRenderer<R
 
     @Override
     public void render(@NotNull RocketAssemblerBlockEntity be, float v, @NotNull PoseStack poseStack, @NotNull MultiBufferSource multiBufferSource, int i, int i1) {
-        if (!Minecraft.getInstance().gui.getDebugOverlay().showDebugScreen()) return;
+//        if (!Minecraft.getInstance().gui.getDebugOverlay().showDebugScreen()) return;
 
         if (be.getPadBounds() == null) return;
         BlockPos min = be.getPadBounds().min();

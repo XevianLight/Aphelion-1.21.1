@@ -29,7 +29,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
 //                modLoc("block/test_block"),
 //                mcLoc("block/furnace_front"),
 //                modLoc("block/test_block")));
-        blockItem(ModBlocks.ROCKET_ASSEMBLER_BLOCK);
+        blockItem(ModBlocks.ROCKET_ASSEMBLER);
 
         blockWithItem(ModBlocks.BLOCK_STEEL);
         blockWithItem(ModBlocks.DIMENSION_CHANGER);

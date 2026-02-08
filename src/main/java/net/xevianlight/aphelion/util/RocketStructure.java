@@ -19,6 +19,8 @@ public final class RocketStructure {
     private final IntList packedPositions = new IntArrayList();
     private final IntList paletteIndices = new IntArrayList();
 
+    private final IntList seatOffsets = new IntArrayList();
+
     public RocketStructure(Builder builder) {
         builder.build(this);
     }
@@ -34,6 +36,7 @@ public final class RocketStructure {
         palette.clear();
         packedPositions.clear();
         paletteIndices.clear();
+        seatOffsets.clear();
     }
 
     public void add(int x, int y, int z, BlockState state) {
@@ -69,6 +72,8 @@ public final class RocketStructure {
         tag.put("pos", posArr);
         tag.put("idx", idxArr);
 
+        tag.put("seats", new IntArrayTag(seatOffsets.toIntArray()));
+
         return tag;
     }
 
@@ -91,6 +96,11 @@ public final class RocketStructure {
         for (int i = 0; i < pos.length; i++) {
             packedPositions.add(pos[i]);
             paletteIndices.add(idx[i]);
+        }
+
+        if (tag.contains("seats", Tag.TAG_INT_ARRAY)) {
+            int[] seats = tag.getIntArray("seats");
+            for (int s : seats) seatOffsets.add(s);
         }
     }
 
@@ -167,7 +177,15 @@ public final class RocketStructure {
             int dz = RocketStructure.unpackZ(packed);
 
             BlockPos wp = origin.offset(dx, dy, dz);
-            level.setBlock(wp, Blocks.AIR.defaultBlockState(), 3);
+            if (level.getBlockState(wp).is(struct.stateAt(i).getBlock()))
+                level.setBlock(wp, Blocks.AIR.defaultBlockState(), 3);
         }
+    }
+
+    public int seatCount() { return seatOffsets.size(); }
+    public int packedSeatAt(int i) { return seatOffsets.getInt(i); }
+
+    public void addSeatOffset(int dx, int dy, int dz) {
+        seatOffsets.add(packPos(dx, dy, dz));
     }
 }

@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.block.custom.base.BasicEntityBlock;
 import net.xevianlight.aphelion.block.custom.base.BasicHorizontalEntityBlock;
 import net.xevianlight.aphelion.block.entity.custom.ElectricArcFurnaceEntity;
@@ -77,7 +78,7 @@ public class ElectricArcFurnace extends BasicHorizontalEntityBlock {
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult result) {
 
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof ElectricArcFurnaceEntity electricArcFurnaceEntity) {
-                serverPlayer.openMenu(new SimpleMenuProvider(electricArcFurnaceEntity, Component.literal("Electric Arc Furnace")), pos);
+            serverPlayer.openMenu(new SimpleMenuProvider(electricArcFurnaceEntity, Component.literal("Electric Arc Furnace")), pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

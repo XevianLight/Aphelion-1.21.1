@@ -20,6 +20,7 @@ import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.block.custom.base.TickableBlockEntity;
 import net.xevianlight.aphelion.core.init.ModBlockEntities;
 import net.xevianlight.aphelion.core.init.ModBlocks;
+import net.xevianlight.aphelion.entites.vehicles.RocketEntity;
 import net.xevianlight.aphelion.util.AphelionBlockStateProperties;
 import net.xevianlight.aphelion.util.ModTags;
 import net.xevianlight.aphelion.util.RocketStructure;
@@ -62,45 +63,6 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
     private final Block TOWER_BLOCK = ModBlocks.BLOCK_STEEL.get();
     public BlockPos towerBasePos;
 
-    public @Nullable PadInfo getPlatform() {
-        // TODO
-        int y = this.padScanStart.getY();
-        BlockPos start = this.padScanStart;
-
-        if (level == null) return null;
-        if (!isPad(level.getBlockState(start))) return null;
-
-        int minX = start.getX();
-        while (isPad(level.getBlockState(new BlockPos(minX - 1, y, start.getZ())))) minX--;
-
-        // Find maxX by walking east
-        int maxX = start.getX();
-        while (isPad(level.getBlockState(new BlockPos(maxX + 1, y, start.getZ())))) maxX++;
-
-        // Find minZ by walking north
-        int minZ = start.getZ();
-        while (isPad(level.getBlockState(new BlockPos(start.getX(), y, minZ - 1)))) minZ--;
-
-        // Find maxZ by walking south
-        int maxZ = start.getZ();
-        while (isPad(level.getBlockState(new BlockPos(start.getX(), y, maxZ + 1)))) maxZ++;
-
-        int width  = (maxX - minX) + 1;
-        int length = (maxZ - minZ) + 1;
-
-        // Must be square
-        if (width != length) return null;
-
-        // Verify the entire rectangle is filled with pad blocks
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                if (!isPad(level.getBlockState(new BlockPos(x, y, z)))) return null;
-            }
-        }
-
-        return new PadInfo(new BlockPos(minX, y, minZ), new BlockPos(maxX, y, maxZ));
-    }
-
     private boolean connected(BlockState state, Direction dir) {
         return switch (dir) {
             case NORTH -> state.getValue(BlockStateProperties.NORTH);
@@ -111,7 +73,7 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
         };
     }
 
-    public @Nullable PadInfo getPlatformFill() {
+    public @Nullable PadInfo getPlatformViaFill() {
         if (level == null) return null;
 
         BlockPos start = this.padScanStart;
@@ -128,8 +90,8 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
         visited.add(start.asLong());
 
         final Direction[] CARDINALS = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
-        // When the $#$# are we going to have a rocket larger than 64x64... don't...
-        final int MAX_PAD_BLOCKS = 4096;
+        // When the $#$# are we going to have a rocket larger than 32x32... don't...
+        final int MAX_PAD_BLOCKS = 1024;
 
         boolean towerFound = false;
         while (!queue.isEmpty()) {
@@ -144,7 +106,7 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
                 BlockPos n = p.relative(d);
 
                 if (!connected(s, d)) {
-                    if (level.getBlockState(n).is(TOWER_BLOCK)) {
+                    if (isTower(level.getBlockState(n))) {
                         if (!towerFound) {
                             towerBasePos = n;
                             towerFound = true;
@@ -194,16 +156,148 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
         int h = 0;
         BlockPos p = base.above();
 
-        while (level.getBlockState(p).is(TOWER_BLOCK)) {
+        while (isTower(level.getBlockState(p))) {
             h++;
             p = p.above();
         }
         return h;
     }
 
-    public RocketStructure scan() {
-        // TODO
-        throw new NotImplementedException();
+    private BlockPos seatPos;
+
+    public @Nullable RocketStructure scan() {
+        if (level == null) return null;
+
+        seatPos = null;
+
+        PadInfo bounds = padBounds;
+        if (bounds == null) return null;
+
+
+        BlockPos min = bounds.min();
+        BlockPos max = bounds.max();
+
+        // Find seat, every rocket must have a seat and all blocks in the rocket must be attached to it
+        for (int y = min.getY(); y <= max.getY(); y++) {
+            for (int x = min.getX(); x <= max.getX(); x++) {
+                for (int z = min.getZ(); z <= max.getZ(); z++) {
+                    BlockPos p = new BlockPos(x, y, z);
+                    BlockState st = level.getBlockState(p);
+
+                    if (!st.is(ModTags.Blocks.ROCKET_SEAT)) continue;
+
+                    if (seatPos != null && !seatPos.equals(p)) {
+                        Aphelion.LOGGER.warn("Rocket scan failed: multiple seats found");
+                        seatPos = null;
+                        return null;
+                    }
+                    seatPos = p;
+                }
+            }
+        }
+
+        if (seatPos == null) {
+            Aphelion.LOGGER.warn("Rocket scan failed: no seat found");
+            seatPos = null;
+            return null;
+        }
+
+        final Direction[] DIRS = Direction.values();
+
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        LongOpenHashSet visited = new LongOpenHashSet();
+
+        queue.add(seatPos);
+        visited.add(seatPos.asLong());
+
+        RocketStructure structure = new RocketStructure(s -> {});
+        structure.addSeatOffset(0,0,0);
+
+        final int MAX_ROCKET_BLOCKS = 1000;
+
+        while (!queue.isEmpty()) {
+            BlockPos p = queue.removeFirst();
+            BlockState st = level.getBlockState(p);
+
+            if (!within(bounds, p)) continue;
+
+            // Any block cases we should IGNORE
+            if (st.isAir()) continue; // ignore air
+            if (isPad(st)) continue; // ignore the pad
+            if (isTower(st)) continue; // ignore the tower
+            if (p.equals(this.worldPosition)) continue; // ignore the assembler
+
+            // Reject block entities
+            if (st.hasBlockEntity() || level.getBlockEntity(p) != null) {
+                Aphelion.LOGGER.warn("Rocket scan failed: found block entity at {}", p);
+                return null;
+            }
+
+            int dx = p.getX() - seatPos.getX();
+            int dy = p.getY() - seatPos.getY();
+            int dz = p.getZ() - seatPos.getZ();
+
+            if (!fitsSignedByte(dx) || !fitsSignedByte(dy) || !fitsSignedByte(dz)) {
+                Aphelion.LOGGER.warn("Rocket scan failed: structure too large to pack at {} (dx={},dy={},dz={})", p, dx, dy, dz);
+                return null;
+            }
+
+            // All checks succeeded, add the block to the rocket
+            structure.add(dx, dy, dz, st);
+
+            // Explore neighbors
+            for (Direction d : DIRS) {
+                BlockPos n = p.relative(d);
+
+                if (!within(bounds, n)) continue; // Skip neighbor outside of rocket assembler bounds
+
+                long key = n.asLong();
+                if (visited.contains(key)) continue; // Skip visited blocks
+
+                BlockState ns = level.getBlockState(n);
+
+                if (ns.isAir()) continue;
+                if (isPad(ns)) continue;
+                if (isTower(ns)) continue;
+                if (n.equals(this.worldPosition)) continue;
+
+                visited.add(key);
+                queue.addLast(n);
+
+                if (visited.size() >= MAX_ROCKET_BLOCKS) {
+                    Aphelion.LOGGER.warn("Rocket scan failed: exceeded max blocks ({})", MAX_ROCKET_BLOCKS);
+                    return null;
+                }
+            }
+        }
+
+        if (structure.size() == 0) return null;
+        return structure;
+    }
+
+    public @Nullable RocketEntity assemble() {
+        if (level == null) return null;
+        RocketStructure structure = scan();
+        RocketEntity rocket = null;
+        if (structure != null && seatPos != null) {
+            RocketStructure.clearCaptured(level, seatPos, structure);
+            rocket = RocketEntity.spawnRocket(level, seatPos, structure);
+            Aphelion.LOGGER.info("Spawn rocket result: {}", rocket);
+        }
+        return rocket;
+    }
+
+    private static boolean within(PadInfo pad, BlockPos p) {
+        BlockPos min = pad.min;
+        BlockPos max = pad.max;
+
+        return p.getX() >= min.getX() && p.getX() <= max.getX()
+            && p.getY() >= min.getY() && p.getY() <= max.getY()
+            && p.getZ() >= min.getZ() && p.getZ() <= max.getZ();
+    }
+
+    private static boolean fitsSignedByte(int v) {
+        return v >= -128 && v <= 127;
     }
 
     @Override
@@ -213,7 +307,7 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
 
     @Override
     public void serverTick(ServerLevel level, long time, BlockState state, BlockPos pos) {
-        PadInfo newBounds = getPlatformFill();
+        PadInfo newBounds = getPlatformViaFill();
         setPadBoundsAndSync(newBounds);
 
         boolean formed = newBounds != null;
@@ -232,6 +326,10 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
 
     private static boolean isPad(BlockState s) {
         return s.is(ModTags.Blocks.LAUNCH_PAD); // or s.getBlock() == ModBlocks.PAD.get()
+    }
+
+    private static boolean isTower(BlockState s) {
+        return s.is(ModBlocks.BLOCK_STEEL);
     }
 
     @Override
