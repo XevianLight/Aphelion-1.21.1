@@ -39,6 +39,16 @@ public class GravityService {
         return getGravityAccel(entity.level(), entityBlockPos);
     }
 
+    public static float getGravityFactor(Entity entity) {
+        float gravityAccelReal = getGravityAccel(entity);
+
+        // How many times normal gravity you're experiencing.
+        // "normal gravity" varies across different entities. Thankfully, minecraft slaps a "protected" status
+        // on LivingEntity.getGravity(), so i graciously get to go fuck myself and not care.
+        // Players are 0.08 units/second/travel() of gravity (from what i've gathered)
+        return gravityAccelReal / GravityData.ONE_G;
+    }
+
     /// Called by LivingEntity$travel mixin
     public static void onEntityTravel(Level level, LivingEntity entity) {
         if (

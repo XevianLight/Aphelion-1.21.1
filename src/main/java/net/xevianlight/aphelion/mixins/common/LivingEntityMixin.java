@@ -31,6 +31,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Inject(method = "travel", at = @At("HEAD"))
     public void aphelion$travel(Vec3 travelVector, CallbackInfo ci) {
-        if (this.isControlledByLocalInstance()) GravityService.onEntityTravel(level(), (LivingEntity) (Object) this);
+        // temporarily disabled in favor of aphelion$getGravity mixin
+        //if (this.isControlledByLocalInstance()) GravityService.onEntityTravel(level(), (LivingEntity) (Object) this);
     }
 }

@@ -4,6 +4,7 @@
   "package": "net.xevianlight.aphelion.mixins",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "common.EntityMixin",
     "common.LivingEntityMixin"
   ],
   "client": [
