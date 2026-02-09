@@ -54,5 +54,10 @@
   "command.aphelion.rocket.get_pos.success": "Target position of rocket is %s",
   "command.aphelion.rocket.get_pos.success.null": "Target position of rocket is not set",
   "command.aphelion.rocket.disassemble.success": "Rocket disassembled",
-  "command.aphelion.rocket.disassemble.failure": "Could not disassemble rocket"
+  "command.aphelion.rocket.disassemble.failure": "Could not disassemble rocket",
+  "command.aphelion.station.invalid": "Station is invalid!",
+  "command.aphelion.station.owner.unset": "Station has no owner",
+  "command.aphelion.station.owner.get": "Station (%s %s) belongs to %s",
+  "command.aphelion.station.owner.set.success": "Set station (%s %s)'s owner to %s",
+  "command.aphelion.player.invalid": "Player is invalid"
 }

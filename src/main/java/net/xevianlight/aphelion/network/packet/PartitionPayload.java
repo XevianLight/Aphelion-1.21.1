@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.core.saveddata.types.PartitionData;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -21,7 +22,7 @@ public record PartitionPayload(PartitionData partitionData) implements CustomPac
             );
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public @NotNull Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 

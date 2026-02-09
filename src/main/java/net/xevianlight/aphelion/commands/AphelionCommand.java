@@ -1,5 +1,6 @@
 package net.xevianlight.aphelion.commands;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
@@ -10,6 +11,7 @@ import net.minecraft.commands.arguments.*;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.ColumnPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.*;
@@ -22,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.core.saveddata.SpacePartitionSavedData;
+import net.xevianlight.aphelion.core.saveddata.types.PartitionData;
 import net.xevianlight.aphelion.entites.vehicles.RocketEntity;
 import net.xevianlight.aphelion.planet.Planet;
 import net.xevianlight.aphelion.util.RocketStructure;
@@ -29,7 +32,9 @@ import net.xevianlight.aphelion.util.SpacePartitionHelper;
 import net.xevianlight.aphelion.util.registries.ModRegistries;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.UUID;
 
 public class AphelionCommand {
 
@@ -246,20 +251,86 @@ public class AphelionCommand {
                                 )
                         )
                         .then(Commands.literal("destination")
-                                .then(Commands.literal("set").then(
-                                        Commands.argument("pos", ColumnPosArgument.columnPos())
-                                            .then(Commands.argument("id", ResourceLocationArgument.id())
-                                                    .executes(context -> {
-                                                        int x = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
-                                                        int z = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
-                                                        ResourceLocation orbit = ResourceLocationArgument.getId(context, "id");
+                                .then(Commands.literal("set")
+                                        .then(Commands.argument("pos", ColumnPosArgument.columnPos())
+                                                .then(Commands.argument("id", ResourceLocationArgument.id())
+                                                        .executes(context -> {
+                                                            int px = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                            int pz = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+                                                            ResourceLocation orbit = ResourceLocationArgument.getId(context, "id");
 
-                                                        ServerLevel level = context.getSource().getLevel();
-                                                        SpacePartitionSavedData.get(level).getData(x,z).setDestination(orbit);
+                                                            ServerLevel level = context.getSource().getLevel();
+                                                            PartitionData data = SpacePartitionSavedData.get(level).getData(px, pz);
+                                                            if (data == null) {
+                                                                context.getSource().sendFailure(Component.translatable("command.aphelion.station.invalid"));
+                                                                return 1;
+                                                            }
+                                                            data.setDestination(orbit);
 
+                                                            return 1;
+                                                        })
+                                                )
+                                        )
+                                )
+                        )
+                        .then(Commands.literal("owner")
+                                .then(Commands.literal("get")
+                                        .then(Commands.argument("pos", ColumnPosArgument.columnPos())
+                                                .executes(context -> {
+                                                    int px = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                    int pz = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+
+                                                    ServerLevel level = context.getSource().getLevel();
+                                                    PartitionData data = SpacePartitionSavedData.get(level).getData(px, pz);
+                                                    var cache = level.getServer().getProfileCache();
+                                                    if (data == null) {
+                                                        context.getSource().sendFailure(Component.translatable("command.aphelion.station.invalid"));
                                                         return 1;
-                                                    })
-                                            )
+                                                    }
+                                                    if (cache == null) {
+                                                        return 0;
+                                                    }
+                                                    UUID uuid = data.getOwner();
+                                                    if (uuid == null) {
+                                                        context.getSource().sendSuccess(() -> Component.translatable("command.aphelion.station.owner.unset"), true);
+                                                        return 1;
+                                                    }
+
+                                                    String name = cache.get(uuid).map(GameProfile::getName).orElse(null);
+                                                    context.getSource().sendSuccess(() -> Component.translatable("command.aphelion.station.owner.get", px, pz, name), true);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("set")
+                                        .then(Commands.argument("pos", ColumnPosArgument.columnPos())
+                                                .then(Commands.argument("player", GameProfileArgument.gameProfile())
+                                                        .executes(context -> {
+                                                            int px = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                            int pz = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+
+                                                            ServerLevel level = context.getSource().getLevel();
+                                                            PartitionData data = SpacePartitionSavedData.get(level).getData(px, pz);
+                                                            if (data == null) {
+                                                                context.getSource().sendFailure(Component.translatable("command.aphelion.station.invalid"));
+                                                                return 1;
+                                                            }
+                                                            Collection<GameProfile> profiles =
+                                                                    GameProfileArgument.getGameProfiles(context, "player");
+
+                                                            if (profiles.size() != 1) {
+                                                                context.getSource().sendFailure(Component.translatable("command.aphelion.player.invalid"));
+                                                                return 0;
+                                                            }
+
+                                                            GameProfile profile = profiles.iterator().next();
+                                                            UUID uuid = profile.getId();
+
+                                                            data.setOwner(uuid);
+                                                            context.getSource().sendSuccess(() -> Component.translatable("command.aphelion.station.owner.set.success", px, pz, profile.getName()), true);
+                                                            return 1;
+                                                        })
+                                                )
                                         )
                                 )
                         )

@@ -54,6 +54,7 @@ public class AphelionDebugOverlay {
 //        event.getLeft().add(" Sky: " + rendererSummary);
         event.getLeft().add(" Station: " +  x + " " + z + "   ID: " + SpacePartitionSavedData.pack(x,z));
         event.getLeft().add(" Station Destination:" + PartitionClientState.lastData().getDestination());
+        event.getLeft().add(" Station Owner:" + PartitionClientState.lastData().getOwner());
         var server = mc.getSingleplayerServer();
         ServerLevel singlePlayerLevel;
         if (server != null) {

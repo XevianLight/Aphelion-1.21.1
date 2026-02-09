@@ -60,6 +60,18 @@ public class SpacePartitionSavedData extends SavedData {
                 pd.setDistanceToDest(e.getDouble("DistanceToDest"));
             }
 
+            if (e.hasUUID("Owner")) {
+                pd.setOwner(e.getUUID("Owner"));
+            }
+
+            if (e.contains("Generated", CompoundTag.TAG_BYTE)) {
+                pd.setGenerated(e.getBoolean("Generated"));
+            }
+
+            if (e.contains("LandingPads", CompoundTag.TAG_LONG_ARRAY)) {
+                pd.setLandingPadContollersFromArray(e.getLongArray("LandingPads"));
+            }
+
             data.map.put(key, pd);
         }
 
@@ -92,6 +104,14 @@ public class SpacePartitionSavedData extends SavedData {
 
             e.putDouble("DistanceTraveled", pd.getDistanceTraveled());
             e.putDouble("DistanceToDest", pd.getDistanceToDest());
+
+            if (pd.getOwner() != null) {
+                e.putUUID("Owner", pd.getOwner());
+            }
+
+            e.putBoolean("Generated", pd.isGenerated());
+
+            e.putLongArray("LandingPads", pd.getLandingPadContollersAsArray());
 
             entries.add(e);
         });
@@ -137,6 +157,12 @@ public class SpacePartitionSavedData extends SavedData {
         }
     }
 
+    /**
+     * Gets the mutable PartitionData object stored at px, pz
+     * @param px
+     * @param pz
+     * @return
+     */
     public @Nullable PartitionData getData(int px, int pz) {
         long key = pack(px, pz);
         PartitionData data = map.get(key);
@@ -154,7 +180,7 @@ public class SpacePartitionSavedData extends SavedData {
 
         boolean changed = false;
         for (var entry : map.long2ObjectEntrySet()) {
-            if(!orbit.equals(entry.getValue())) {
+            if(!orbit.equals(entry.getValue().getOrbit())) {
                 entry.getValue().setOrbit(orbit);
                 changed = true;
             }
