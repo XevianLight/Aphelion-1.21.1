@@ -1,11 +1,16 @@
 package net.xevianlight.aphelion.block.custom;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -14,9 +19,16 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.xevianlight.aphelion.block.custom.base.BasicEntityBlock;
+import net.xevianlight.aphelion.block.entity.custom.OxygenTestBlockEntity;
+import net.xevianlight.aphelion.block.entity.custom.PipeTestBlockEntity;
+import net.xevianlight.aphelion.core.init.ModBlocks;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 // a lot of this is ai slop so take it with a grainlet of salt
-public class PipeTestBlock extends Block {
+public class PipeTestBlock extends BasicEntityBlock {
 
     // shortcuts for each directional property because they're pretty verbose
     // t/f here means is/isn't connected outgoing in that direction
@@ -53,20 +65,25 @@ public class PipeTestBlock extends Block {
     }
 
     public PipeTestBlock(Properties properties) {
-        super(properties);
+        super(properties, true);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(NORTH, false).setValue(SOUTH, false)
                 .setValue(EAST, false).setValue(WEST, false)
                 .setValue(UP, false).setValue(DOWN, false));
     }
 
-    // This method determines the state when first placed
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return null;
+    }
+
+    // This method determines the state; called when first placed
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return makeConnections(context.getLevel(), context.getClickedPos());
     }
 
-    // Updates the block when a neighbor changes
+    // Updates the block; called when a neighbor changes
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
         return makeConnections(level, currentPos);
@@ -78,17 +95,41 @@ public class PipeTestBlock extends Block {
 
     private BlockState makeConnections(LevelAccessor level, BlockPos pos) {
         return this.defaultBlockState()
-                .setValue(NORTH, canConnect(level, pos.north()))
-                .setValue(SOUTH, canConnect(level, pos.south()))
-                .setValue(EAST, canConnect(level, pos.east()))
-                .setValue(WEST, canConnect(level, pos.west()))
-                .setValue(UP, canConnect(level, pos.above()))
-                .setValue(DOWN, canConnect(level, pos.below()));
+                .setValue(NORTH, canConnect(level, pos.north(), Direction.SOUTH))
+                .setValue(SOUTH, canConnect(level, pos.south(), Direction.NORTH))
+                .setValue(EAST, canConnect(level, pos.east(), Direction.WEST))
+                .setValue(WEST, canConnect(level, pos.west(), Direction.EAST))
+                .setValue(UP, canConnect(level, pos.above(), Direction.DOWN))
+                .setValue(DOWN, canConnect(level, pos.below(), Direction.UP));
     }
 
-    private boolean canConnect(LevelAccessor level, BlockPos neighborPos) {
-        // Simplest logic: connect if the neighbor is also a SimplePipeBlock
-        return level.getBlockState(neighborPos).getBlock() == this;
+    /// If a PipeTestBlock can connect to this position from the given direction.
+    /// If you're going to the NORTH of yourself, you should be accessing the SOUTH side.
+    public static boolean canConnect(LevelAccessor levelA, BlockPos neighborPos, Direction accessSide) {
+        // Methinks this is not the best way to test this.
+        boolean isPipe = levelA.getBlockState(neighborPos).is(ModBlocks.PIPE_TEST_BLOCK.get());
+
+        /// This code is AI, but I think it works? I think the reason it's a levelAccessor instead of a level
+        /// is that we're not sure if we're in, for example, an inventory slot or not.
+        /// Either way, this should only trigger when it makes sense (assuming this is correct in the first place)
+        boolean isInventory;
+        if (levelA instanceof Level level) {
+            isInventory = level.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, accessSide) != null;
+        } else {
+            isInventory = false;
+        }
+
+        return isPipe || isInventory;
+    }
+
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        BlockEntity BE = level.getBlockEntity(pos);
+        if (BE instanceof PipeTestBlockEntity pipe) {
+            // force everything connected to this pipe to reevaluate
+            if (pipe.graph != null) pipe.graph.invalidate();
+        }
     }
 
     @Override
@@ -121,5 +162,10 @@ public class PipeTestBlock extends Block {
     @Override
     public float getShadeBrightness(BlockState state, BlockGetter world, BlockPos pos) {
         return 1.0F; // Maintains full brightness
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos blockPos, @NotNull BlockState blockState) {
+        return new PipeTestBlockEntity(blockPos, blockState);
     }
 }

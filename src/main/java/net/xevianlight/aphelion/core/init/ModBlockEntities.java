@@ -51,4 +51,9 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("rocket_assembler_block_entity", () -> BlockEntityType.Builder.of(
                     RocketAssemblerBlockEntity::new, ModBlocks.ROCKET_ASSEMBLER_BLOCK.get()).build(null)
             );
+
+    public static final Supplier<BlockEntityType<PipeTestBlockEntity>> PIPE_TEST_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("pipe_test_block_entity", () -> BlockEntityType.Builder.of(
+                    PipeTestBlockEntity::new, ModBlocks.PIPE_TEST_BLOCK.get()).build(null)
+            );
 }
