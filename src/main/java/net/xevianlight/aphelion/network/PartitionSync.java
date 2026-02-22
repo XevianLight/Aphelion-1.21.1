@@ -10,7 +10,7 @@ import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.core.saveddata.SpacePartitionSavedData;
 import net.xevianlight.aphelion.core.saveddata.types.PartitionData;
 import net.xevianlight.aphelion.network.packet.PartitionPayload;
-import net.xevianlight.aphelion.util.SpacePartitionHelper;
+import net.xevianlight.aphelion.util.SpacePartition;
 
 import java.util.UUID;
 
@@ -42,8 +42,8 @@ public final class PartitionSync {
     }
 
     private static PartitionPayload computePartitionFor(ServerPlayer sp) {
-        int px = (int)Math.floor(sp.getX() / SpacePartitionHelper.SIZE);
-        int pz = (int)Math.floor(sp.getZ() / SpacePartitionHelper.SIZE);
+        int px = (int)Math.floor(sp.getX() / SpacePartition.SIZE);
+        int pz = (int)Math.floor(sp.getZ() / SpacePartition.SIZE);
 
         PartitionData live = SpacePartitionSavedData.get(sp.serverLevel()).getData(px, pz);
 

@@ -2,6 +2,7 @@ package net.xevianlight.aphelion.core.saveddata;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -10,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.core.saveddata.types.PartitionData;
+import net.xevianlight.aphelion.util.SpacePartition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,10 +56,10 @@ public class SpacePartitionSavedData extends SavedData {
 
             // Distances (optional; default 0.0)
             if (e.contains("DistanceTraveled", CompoundTag.TAG_DOUBLE)) {
-                pd.setDistanceTraveled(e.getDouble("DistanceTraveled"));
+                pd.setDistanceTraveledAU(e.getDouble("DistanceTraveled"));
             }
             if (e.contains("DistanceToDest", CompoundTag.TAG_DOUBLE)) {
-                pd.setDistanceToDest(e.getDouble("DistanceToDest"));
+                pd.setTripDistanceAU(e.getDouble("DistanceToDest"));
             }
 
             if (e.hasUUID("Owner")) {
@@ -102,8 +104,8 @@ public class SpacePartitionSavedData extends SavedData {
             // Traveling + distances
             e.putBoolean("Traveling", pd.isTraveling());
 
-            e.putDouble("DistanceTraveled", pd.getDistanceTraveled());
-            e.putDouble("DistanceToDest", pd.getDistanceToDest());
+            e.putDouble("DistanceTraveled", pd.getDistanceTraveledAU());
+            e.putDouble("DistanceToDest", pd.getTripDistanceAU());
 
             if (pd.getOwner() != null) {
                 e.putUUID("Owner", pd.getOwner());
@@ -158,16 +160,79 @@ public class SpacePartitionSavedData extends SavedData {
     }
 
     /**
-     * Gets the mutable PartitionData object stored at px, pz
-     * @param px
-     * @param pz
-     * @return
+     * Returns the {@link PartitionData} stored at the given partition indices.
+     *
+     * <p>The returned {@code PartitionData} is mutable. Any modifications to the returned
+     * object will be persisted to the server.</p>
+     *
+     * <p>If no {@code PartitionData} exists at the specified indices, a new instance is
+     * created using {@code aphelion:orbit/default}, stored in the server cache, and returned.</p>
+     *
+     * @param px the partition X index
+     * @param pz the partition Z index
+     * @return the {@code PartitionData} associated with the specified partition indices
      */
-    public @Nullable PartitionData getData(int px, int pz) {
+    public @NotNull PartitionData getData(int px, int pz) {
         long key = pack(px, pz);
         PartitionData data = map.get(key);
         if (data == null) {
+
             // pick a sensible default orbit, or null if you truly allow it
+            data = new PartitionData(Aphelion.id("orbit/default"));
+            map.put(key, data);
+            setDirty();
+        }
+        return data;
+    }
+
+    /**
+     * Returns the {@link PartitionData} for the partition containing the given world position.
+     *
+     * <p>The returned {@code PartitionData} is mutable. Any modifications to the returned
+     * object will be persisted to the server.</p>
+     *
+     * <p>If no {@code PartitionData} exists for the partition containing the specified
+     * position, a new instance is created using {@code aphelion:orbit/default},
+     * stored in the server cache, and returned.</p>
+     *
+     * @param x the world X coordinate
+     * @param z the world Z coordinate
+     * @return the {@code PartitionData} associated with the partition containing the position
+     */
+    public @NotNull PartitionData getDataForPos(int x, int z) {
+        int px = SpacePartition.get(x);
+        int pz = SpacePartition.get(z);
+        long key = pack(px, pz);
+        PartitionData data = map.get(key);
+        if (data == null) {
+
+            data = new PartitionData(Aphelion.id("orbit/default"));
+            map.put(key, data);
+            setDirty();
+        }
+        return data;
+    }
+
+    /**
+     * Returns the {@link PartitionData} for the partition containing the given block position.
+     *
+     * <p>The returned {@code PartitionData} is mutable. Any modifications to the returned
+     * object will be persisted to the server.</p>
+     *
+     * <p>If no {@code PartitionData} exists for the partition containing the specified
+     * position, a new instance is created using {@code aphelion:orbit/default},
+     * stored in the server cache, and returned.</p>
+     *
+     * @param pos the world block position
+     * @return the {@code PartitionData} associated with the partition containing the position
+     */
+    public @NotNull PartitionData getDataForBlockPos(BlockPos pos) {
+        int px = SpacePartition.get(pos.getX());
+        int pz = SpacePartition.get(pos.getZ());
+        long key = pack(px, pz);
+        PartitionData data = map.get(key);
+        if (data == null) {
+
             data = new PartitionData(Aphelion.id("orbit/default"));
             map.put(key, data);
             setDirty();

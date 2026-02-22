@@ -1,6 +1,6 @@
 package net.xevianlight.aphelion.util;
 
-public class SpacePartitionHelper {
+public class SpacePartition {
 
     public static final int SIZE = 16;
 

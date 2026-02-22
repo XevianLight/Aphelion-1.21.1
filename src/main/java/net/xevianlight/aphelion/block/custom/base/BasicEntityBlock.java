@@ -37,14 +37,16 @@ public abstract class BasicEntityBlock extends BaseEntityBlock {
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
         return !shouldTick ? null : (entityLevel, pos, blockState, blockEntity) -> {
             if (blockEntity instanceof TickableBlockEntity tickable) {
-                long time = level.getGameTime() - pos.hashCode();
+                if (!tickable.isInitialized()) tickable.firstTick(entityLevel, blockState, pos);
+
+                long time = entityLevel.getGameTime() - pos.hashCode();
                 tickable.tick(entityLevel, time, blockState, pos);
-                if (level.isClientSide()) {
-                    tickable.clientTick((ClientLevel) level, time, state, pos);
+
+                if (entityLevel.isClientSide()) {
+                    tickable.clientTick((ClientLevel) entityLevel, time, blockState, pos);
                 } else {
-                    tickable.serverTick((ServerLevel) level, time, state, pos);
+                    tickable.serverTick((ServerLevel) entityLevel, time, blockState, pos);
                 }
-                if (!tickable.isInitialized()) tickable.firstTick(level, state, pos);
             }
         };
     }

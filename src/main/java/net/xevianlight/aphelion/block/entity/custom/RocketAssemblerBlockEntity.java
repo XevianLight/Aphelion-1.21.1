@@ -21,6 +21,9 @@ import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.block.custom.base.TickableBlockEntity;
 import net.xevianlight.aphelion.core.init.ModBlockEntities;
 import net.xevianlight.aphelion.core.init.ModBlocks;
+import net.xevianlight.aphelion.core.init.ModDimensions;
+import net.xevianlight.aphelion.core.saveddata.SpacePartitionSavedData;
+import net.xevianlight.aphelion.core.saveddata.types.PartitionData;
 import net.xevianlight.aphelion.entites.vehicles.RocketEntity;
 import net.xevianlight.aphelion.util.AphelionBlockStateProperties;
 import net.xevianlight.aphelion.util.ModTags;
@@ -37,6 +40,8 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
     BlockPos padScanStart = BlockPos.ZERO;
     private PadInfo padBounds;
     RocketEntity lastRocket;
+
+    private @Nullable PartitionData data;
 
     public @Nullable PadInfo getPadBounds() {
         return padBounds;
@@ -60,9 +65,19 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
 
             return dx * dy * dz;
         }
+
+        public BlockPos getCenter() {
+            int centerX = (min.getX() + max.getX()) / 2;
+            int centerZ = (min.getZ() + max.getZ()) / 2;
+
+            // bottom Y level
+            int y = min.getY();
+
+            return new BlockPos(centerX, y, centerZ);
+        }
     }
 
-    private final Block TOWER_BLOCK = ModBlocks.BLOCK_STEEL.get();
+    private static final Block TOWER_BLOCK = ModBlocks.BLOCK_STEEL.get();
     public BlockPos towerBasePos;
 
     private boolean connected(BlockState state, Direction dir) {
@@ -318,23 +333,44 @@ public class RocketAssemblerBlockEntity extends BlockEntity implements TickableB
         boolean formed = newBounds != null;
         if (state.getValue(AphelionBlockStateProperties.FORMED) != formed) {
             level.setBlockAndUpdate(pos, state.setValue(AphelionBlockStateProperties.FORMED, formed));
+            if (data != null) {
+                if (formed) {
+                    data.addLandingPadController(pos);
+                } else {
+                    data.removeLandingPadController(pos);
+                }
+            }
         }
     }
 
     @Override
     public void firstTick(Level level, BlockState state, BlockPos pos) {
+        if (level.isClientSide()) return;
+
         facing = getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
         padScanStart = getBlockPos().mutable().below().relative(facing.getOpposite());
+
+        if (level instanceof ServerLevel serverLevel) {
+            if (serverLevel.dimension() == ModDimensions.SPACE) {
+                data = SpacePartitionSavedData.get(serverLevel).getDataForBlockPos(pos);
+            }
+        }
+
         this.isInitialized = true;
     }
 
+    @Override
+    public void onRemoved() {
+        if (data == null) return;
+        data.removeLandingPadController(worldPosition);
+    }
 
     private static boolean isPad(BlockState s) {
         return s.is(ModTags.Blocks.LAUNCH_PAD); // or s.getBlock() == ModBlocks.PAD.get()
     }
 
     private static boolean isTower(BlockState s) {
-        return s.is(ModBlocks.BLOCK_STEEL);
+        return s.is(TOWER_BLOCK);
     }
 
     @Override

@@ -3,7 +3,6 @@ package net.xevianlight.aphelion.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -15,7 +14,7 @@ import net.xevianlight.aphelion.client.dimension.DimensionRendererCache;
 import net.xevianlight.aphelion.client.dimension.SpaceSkyEffects;
 import net.xevianlight.aphelion.core.saveddata.EnvironmentSavedData;
 import net.xevianlight.aphelion.core.saveddata.SpacePartitionSavedData;
-import net.xevianlight.aphelion.util.SpacePartitionHelper;
+import net.xevianlight.aphelion.util.SpacePartition;
 
 @EventBusSubscriber(modid = Aphelion.MOD_ID, value = Dist.CLIENT)
 public class AphelionDebugOverlay {
@@ -44,8 +43,8 @@ public class AphelionDebugOverlay {
                 + ", thickFog=" + r.hasThickFog()
                 + ", fog=" + r.hasFog());
 
-        int x = SpacePartitionHelper.get(Math.floor(mc.player.position().x));
-        int z = SpacePartitionHelper.get(Math.floor(mc.player.position().z));
+        int x = SpacePartition.get(Math.floor(mc.player.position().x));
+        int z = SpacePartition.get(Math.floor(mc.player.position().z));
 
         // Left side of F3
         event.getLeft().add("");

@@ -11,7 +11,6 @@ import net.minecraft.commands.arguments.*;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.ColumnPosArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.*;
@@ -26,10 +25,8 @@ import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.core.saveddata.SpacePartitionSavedData;
 import net.xevianlight.aphelion.core.saveddata.types.PartitionData;
 import net.xevianlight.aphelion.entites.vehicles.RocketEntity;
-import net.xevianlight.aphelion.planet.Planet;
 import net.xevianlight.aphelion.util.RocketStructure;
-import net.xevianlight.aphelion.util.SpacePartitionHelper;
-import net.xevianlight.aphelion.util.registries.ModRegistries;
+import net.xevianlight.aphelion.util.SpacePartition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -47,8 +44,8 @@ public class AphelionCommand {
                                         .then(Commands.argument("pos", ColumnPosArgument.columnPos())
                                                 .then(Commands.argument("orbit", ResourceLocationArgument.id())
                                                         .executes(context -> {
-                                                            int x = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
-                                                            int z = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+                                                            int x = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                            int z = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").z());
                                                             ResourceLocation orbit = ResourceLocationArgument.getId(context, "orbit");
 
                                                             ServerLevel level = context.getSource().getLevel();
@@ -85,8 +82,8 @@ public class AphelionCommand {
                                 .then(Commands.literal("get")
                                         .then(Commands.argument("pos", ColumnPosArgument.columnPos())
                                                 .executes(context -> {
-                                                    int x = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
-                                                    int z = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+                                                    int x = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                    int z = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").z());
 
                                                     ServerLevel level = context.getSource().getLevel();
                                                     ResourceLocation orbit = SpacePartitionSavedData.get(level).getOrbitForPartition(x, z);
@@ -110,8 +107,8 @@ public class AphelionCommand {
                                 .then(Commands.literal("clear")
                                         .then(Commands.argument("pos", ColumnPosArgument.columnPos())
                                                 .executes(context -> {
-                                                    int x = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
-                                                    int z = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+                                                    int x = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                    int z = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").z());
 
                                                     ServerLevel level = context.getSource().getLevel();
 
@@ -148,8 +145,8 @@ public class AphelionCommand {
                                                         .executes(context -> {
                                                             ServerLevel level = context.getSource().getLevel();
 
-                                                            int x = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context,"pos").x());
-                                                            int z = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context,"pos").z());
+                                                            int x = SpacePartition.get(ColumnPosArgument.getColumnPos(context,"pos").x());
+                                                            int z = SpacePartition.get(ColumnPosArgument.getColumnPos(context,"pos").z());
 
                                                             long key = SpacePartitionSavedData.pack(x,z);
 
@@ -195,7 +192,7 @@ public class AphelionCommand {
                                                             int x = ColumnPosArgument.getColumnPos(context, "pos").x();
                                                             int z = ColumnPosArgument.getColumnPos(context, "pos").z();
 
-                                                            String stationCoord = SpacePartitionHelper.get(x) + " " + SpacePartitionHelper.get(z);
+                                                            String stationCoord = SpacePartition.get(x) + " " + SpacePartition.get(z);
 
                                                             Component clickableOutput = getClickablePos(stationCoord, ChatFormatting.GREEN);
 
@@ -217,8 +214,8 @@ public class AphelionCommand {
                                                     double x = (double) IntegerArgumentType.getInteger(context, "x");
                                                     double z = (double) IntegerArgumentType.getInteger(context, "z");
 
-                                                    int destX = (int) Math.floor(x * SpacePartitionHelper.SIZE) + (SpacePartitionHelper.SIZE / 2);
-                                                    int destZ = (int) Math.floor(z * SpacePartitionHelper.SIZE) + (SpacePartitionHelper.SIZE / 2);
+                                                    int destX = (int) Math.floor(x * SpacePartition.SIZE) + (SpacePartition.SIZE / 2);
+                                                    int destZ = (int) Math.floor(z * SpacePartition.SIZE) + (SpacePartition.SIZE / 2);
 
                                                     String stationCoord = x + ", " + z;
 
@@ -255,8 +252,8 @@ public class AphelionCommand {
                                         .then(Commands.argument("pos", ColumnPosArgument.columnPos())
                                                 .then(Commands.argument("id", ResourceLocationArgument.id())
                                                         .executes(context -> {
-                                                            int px = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
-                                                            int pz = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+                                                            int px = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                            int pz = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").z());
                                                             ResourceLocation orbit = ResourceLocationArgument.getId(context, "id");
 
                                                             ServerLevel level = context.getSource().getLevel();
@@ -277,8 +274,8 @@ public class AphelionCommand {
                                 .then(Commands.literal("get")
                                         .then(Commands.argument("pos", ColumnPosArgument.columnPos())
                                                 .executes(context -> {
-                                                    int px = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
-                                                    int pz = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+                                                    int px = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                    int pz = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").z());
 
                                                     ServerLevel level = context.getSource().getLevel();
                                                     PartitionData data = SpacePartitionSavedData.get(level).getData(px, pz);
@@ -306,8 +303,8 @@ public class AphelionCommand {
                                         .then(Commands.argument("pos", ColumnPosArgument.columnPos())
                                                 .then(Commands.argument("player", GameProfileArgument.gameProfile())
                                                         .executes(context -> {
-                                                            int px = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").x());
-                                                            int pz = SpacePartitionHelper.get(ColumnPosArgument.getColumnPos(context, "pos").z());
+                                                            int px = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").x());
+                                                            int pz = SpacePartition.get(ColumnPosArgument.getColumnPos(context, "pos").z());
 
                                                             ServerLevel level = context.getSource().getLevel();
                                                             PartitionData data = SpacePartitionSavedData.get(level).getData(px, pz);

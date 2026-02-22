@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.xevianlight.aphelion.Aphelion;
 import net.xevianlight.aphelion.client.PartitionClientState;
-import net.xevianlight.aphelion.util.SpacePartitionHelper;
+import net.xevianlight.aphelion.util.SpacePartition;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -67,8 +67,8 @@ public class SpaceSkyEffects extends DimensionSpecialEffects {
 
     public static ResourceLocation orbitForPos(Vec3 pos) {
 
-        int x = SpacePartitionHelper.get(pos.x);
-        int z = SpacePartitionHelper.get(pos.z);
+        int x = SpacePartition.get(pos.x);
+        int z = SpacePartition.get(pos.z);
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return ResourceLocation.fromNamespaceAndPath(Aphelion.MOD_ID, "orbit/default");

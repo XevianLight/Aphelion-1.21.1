@@ -3,17 +3,13 @@ package net.xevianlight.aphelion.core.saveddata.types;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.xevianlight.aphelion.util.BigCodec;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class PartitionData {
     public static final int MAX_PADS = 64;
@@ -22,32 +18,37 @@ public class PartitionData {
     @Nullable private ResourceLocation orbit;
     @Nullable private ResourceLocation destination;
     private boolean traveling;
-    private double distanceTraveled;
-    private double distanceToDest;
+    /// How far we've already gone
+    private double distanceTraveledAU;
+    /// Total trip distance, from start to finish
+    private double tripDistanceAU;
     private boolean generated;
     private UUID owner;
     private List<BlockPos> landingPadControllers;
+    private List<BlockPos> engines;
 
     public PartitionData(@Nullable ResourceLocation orbit) {
         this.orbit = orbit;
         this.destination = null;
         this.traveling = false;
-        this.distanceTraveled = 0;
-        this.distanceToDest = 0;
+        this.distanceTraveledAU = 0;
+        this.tripDistanceAU = 0;
         this.generated = false;
         this.owner = null;
         this.landingPadControllers = List.of();
+        this.engines = List.of();
     }
 
     public PartitionData(PartitionData other) {
         this.orbit = other.orbit;
         this.destination = other.destination;
         this.traveling = other.traveling;
-        this.distanceTraveled = other.distanceTraveled;
-        this.distanceToDest = other.distanceToDest;
+        this.distanceTraveledAU = other.distanceTraveledAU;
+        this.tripDistanceAU = other.tripDistanceAU;
         this.generated = other.generated;
         this.owner = other.owner;
         this.landingPadControllers = other.landingPadControllers;
+        this.engines = other.engines;
     }
 
     public static final StreamCodec<ByteBuf, PartitionData> STREAM_CODEC =
@@ -64,10 +65,10 @@ public class PartitionData {
 
                     // doubles -> DOUBLE codec
                     ByteBufCodecs.DOUBLE,
-                    PartitionData::getDistanceTraveled,
+                    PartitionData::getDistanceTraveledAU,
 
                     ByteBufCodecs.DOUBLE,
-                    PartitionData::getDistanceToDest,
+                    PartitionData::getTripDistanceAU,
 
                     ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC),
                     d -> Optional.ofNullable(d.getOwner()),
@@ -78,15 +79,19 @@ public class PartitionData {
                     BLOCKPOS_LIST_CODEC,
                     PartitionData::getLandingPadControllers,
 
-                    (orbitOpt, destOpt, traveling, distTraveled, distToDest, ownerOpt, generated, controllers) -> {
+                    BLOCKPOS_LIST_CODEC,
+                    PartitionData::getEngines,
+
+                    (orbitOpt, destOpt, traveling, distTraveled, distToDest, ownerOpt, generated, controllers, engines) -> {
                         PartitionData data = new PartitionData(orbitOpt.orElse(null));
                         data.destination = destOpt.orElse(null);
                         data.traveling = traveling;
-                        data.distanceTraveled = distTraveled;
-                        data.distanceToDest = distToDest;
+                        data.distanceTraveledAU = distTraveled;
+                        data.tripDistanceAU = distToDest;
                         data.owner = ownerOpt.orElse(null);
                         data.generated = generated;
                         data.landingPadControllers = controllers;
+                        data.engines = engines;
                         return data;
                     }
             );
@@ -115,24 +120,35 @@ public class PartitionData {
         this.traveling = traveling;
     }
 
-    public double getDistanceTraveled() {
-        return distanceTraveled;
+    public double getDistanceTraveledAU() {
+        return distanceTraveledAU;
     }
 
-    public void setDistanceTraveled(double distanceTraveled) {
-        this.distanceTraveled = distanceTraveled;
+    public void setDistanceTraveledAU(double distanceTraveledAU) {
+        this.distanceTraveledAU = distanceTraveledAU;
     }
 
-    public double getDistanceToDest() {
-        return distanceToDest;
+    public double getTripDistanceAU() {
+        return tripDistanceAU;
     }
 
-    public void setDistanceToDest(double distanceToDest) {
-        this.distanceToDest = distanceToDest;
+    public void setTripDistanceAU(double tripDistanceAU) {
+        this.tripDistanceAU = tripDistanceAU;
     }
 
+    /**
+     * Advances travel progress by the specified distance in AU.
+     *
+     * <p>This increases {@code distanceTraveledAU} by the given amount and clamps
+     * the result so it never exceeds {@code tripDistanceAU}.</p>
+     *
+     * <p>If the requested distance would overshoot the destination, the traveled
+     * distance is set to exactly {@code tripDistanceAU}.</p>
+     *
+     * @param distance the distance to advance in astronomical units (AU)
+     */
     public void travel(double distance) {
-        distanceTraveled = Math.min( distanceTraveled + distance, distanceToDest);
+        distanceTraveledAU = Math.min(distanceTraveledAU + distance, tripDistanceAU);
     }
 
     public boolean isGenerated() {
@@ -151,14 +167,40 @@ public class PartitionData {
         this.owner = owner;
     }
 
+    /**
+     * Returns a copy of the world positions of all landing pad controllers tracked
+     * by this partition.
+     *
+     * <p>This method returns only the stored {@link BlockPos} locations of known
+     * landing pad controllers, not the controller instances or block entities
+     * themselves. To interact with a controller, retrieve its block entity from
+     * the world using the returned positions.</p>
+     *
+     * <p>The returned list is a defensive copy and may be modified without affecting
+     * the underlying partition data. To persist changes, use
+     * {@code setLandingPadControllers(...)}.</p>
+     *
+     * @return a mutable copy of the landing pad controller positions known to this partition
+     */
     public List<BlockPos> getLandingPadControllers() {
-        return landingPadControllers;
+        return new ArrayList<>(landingPadControllers);
     }
 
     public void setLandingPadControllers(List<BlockPos> landingPadControllers) {
         this.landingPadControllers = landingPadControllers;
     }
 
+
+    /**
+     * Adds a landing pad controller at the specified world position.
+     *
+     * <p>If a controller does not already exist at the given position, it is added
+     * to the internal collection and the method returns {@code true}. If a controller
+     * is already present at that position, no changes are made.</p>
+     *
+     * @param pos the world position of the landing pad controller to add
+     * @return {@code true} if the controller was added, {@code false} if it already existed
+     */
     public boolean addLandingPadController(BlockPos pos) {
         if (!landingPadControllers.contains(pos)) {
             landingPadControllers.add(pos);
@@ -167,8 +209,38 @@ public class PartitionData {
         return false;
     }
 
+    /**
+     * Removes the landing pad controller at the specified world position.
+     *
+     * <p>If a controller exists at the given position, it is removed from the
+     * internal collection and the method returns {@code true}. If no controller
+     * is present at that position, no changes are made.</p>
+     *
+     * @param pos the world position of the landing pad controller to remove
+     * @return {@code true} if a controller was removed, {@code false} otherwise
+     */
     public boolean removeLandingPadController(BlockPos pos) {
         return landingPadControllers.remove(pos);
+    }
+
+    public List<BlockPos> getEngines() {
+        return engines;
+    }
+
+    public void setEngines(List<BlockPos> engines) {
+        this.engines = engines;
+    }
+
+    public boolean addEngine(BlockPos pos) {
+        if (!engines.contains(pos)) {
+            engines.add(pos);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeEngine(BlockPos pos) {
+        return engines.remove(pos);
     }
 
     @Override
@@ -181,8 +253,8 @@ public class PartitionData {
         return Objects.equals(this.orbit, that.orbit)
                 && Objects.equals(this.destination, that.destination)
                 && this.traveling == that.traveling
-                && Double.compare(this.distanceTraveled, that.distanceTraveled) == 0
-                && Double.compare(this.distanceToDest, that.distanceToDest) == 0
+                && Double.compare(this.distanceTraveledAU, that.distanceTraveledAU) == 0
+                && Double.compare(this.tripDistanceAU, that.tripDistanceAU) == 0
                 && this.generated == that.generated
                 && Objects.equals(this.owner, that.owner);
     }
