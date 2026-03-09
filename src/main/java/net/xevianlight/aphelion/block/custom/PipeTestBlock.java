@@ -1,9 +1,15 @@
 package net.xevianlight.aphelion.block.custom;
 
+import com.mojang.datafixers.kinds.Const;
+import com.mojang.math.Constants;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -15,13 +21,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.xevianlight.aphelion.block.custom.base.BasicEntityBlock;
-import net.xevianlight.aphelion.block.entity.custom.OxygenTestBlockEntity;
 import net.xevianlight.aphelion.block.entity.custom.PipeTestBlockEntity;
 import net.xevianlight.aphelion.core.init.ModBlocks;
 import org.jetbrains.annotations.NotNull;
@@ -93,14 +100,24 @@ public class PipeTestBlock extends BasicEntityBlock {
         return Properties.of().noOcclusion();
     }
 
+    private boolean hasAttachment(@Nullable PipeTestBlockEntity BE, Direction direction) {
+        return (BE != null && BE.hasAttachment(direction));
+    }
+
     private BlockState makeConnections(LevelAccessor level, BlockPos pos) {
+        BlockEntity BE = level.getBlockEntity(pos);
+        PipeTestBlockEntity PTBE = null;
+        if (BE instanceof PipeTestBlockEntity found) {
+            PTBE = found;
+        }
+
         return this.defaultBlockState()
-                .setValue(NORTH, canConnect(level, pos.north(), Direction.SOUTH))
-                .setValue(SOUTH, canConnect(level, pos.south(), Direction.NORTH))
-                .setValue(EAST, canConnect(level, pos.east(), Direction.WEST))
-                .setValue(WEST, canConnect(level, pos.west(), Direction.EAST))
-                .setValue(UP, canConnect(level, pos.above(), Direction.DOWN))
-                .setValue(DOWN, canConnect(level, pos.below(), Direction.UP));
+                .setValue(NORTH, canConnect(level, pos.north(), Direction.SOUTH) || hasAttachment(PTBE, Direction.NORTH))
+                .setValue(SOUTH, canConnect(level, pos.south(), Direction.NORTH) || hasAttachment(PTBE, Direction.SOUTH))
+                .setValue(EAST, canConnect(level, pos.east(), Direction.WEST) || hasAttachment(PTBE, Direction.EAST))
+                .setValue(WEST, canConnect(level, pos.west(), Direction.EAST) || hasAttachment(PTBE, Direction.WEST))
+                .setValue(UP, canConnect(level, pos.above(), Direction.DOWN) || hasAttachment(PTBE, Direction.UP))
+                .setValue(DOWN, canConnect(level, pos.below(), Direction.UP) || hasAttachment(PTBE, Direction.DOWN));
     }
 
     /// If a PipeTestBlock can connect to this position from the given direction.
@@ -130,11 +147,28 @@ public class PipeTestBlock extends BasicEntityBlock {
             // force everything connected to this pipe to reevaluate
             if (pipe.graph != null) pipe.graph.invalidate();
         }
+        super.onRemove(state, level, pos, newState, isMoving);
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+
+        BlockEntity BE = level.getBlockEntity(pos);
+        if (BE instanceof PipeTestBlockEntity PTBE) {
+            ItemInteractionResult r = PTBE.useItemOn(stack, state, level, pos, player, hand, hitResult, this);
+
+            BlockState newState = makeConnections(level, pos);
+            level.setBlock(pos, newState, 3);
+
+            return r;
+        } else {
+            return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        }
     }
 
     // Doesn't block sunlight
